@@ -6,6 +6,7 @@ const {User, Subscription} = require('../../models');
 const bcrypt = require('bcryptjs');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
 const {generateToken, retrieveToken, updateToken, retrieveCoupon, toValidPhone, googleCheckToken, fbCheckToken} = require('../../modules/auth');
+const {userToFront} = require('../../modules/helpers');
 const {STRIPE_CONSTANTS, USER_TYPES} = require('../../constants');
 const {Op} = require('sequelize');
 const http = require('http');
@@ -81,8 +82,9 @@ const whoami = async (req, res, next) => {
   }
   await updateToken(token);
 
-  const user = await User.findByPk(token.user_id);
-  res.send({user});
+  const user = await userToFront(token.user_id);
+
+  res.send(user);
 };
 
 const signUp = async (req, res, next) => {

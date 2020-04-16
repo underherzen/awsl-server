@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const guideRoutes = require('./guides');
 const {User} = require('../../models');
+const {isUserActive} = require('../../controllers');
 const {retrieveToken} = require('../../modules/helpers');
 
 router.use('/*', async (req, res, next) => {
@@ -19,9 +20,14 @@ router.use('/*', async (req, res, next) => {
   next()
 });
 
+//routes if it doesnt matter if active or not
 
-//these routes if
 router.use('/guides', guideRoutes);
+
+//these routes if user is active
+router.use('/*', isUserActive);
+
+
 
 
 module.exports = router;

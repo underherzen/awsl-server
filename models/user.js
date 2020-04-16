@@ -63,6 +63,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: true
     },
+    can_receive_texts: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
     created_at: {
       allowNull: false,
       type: DataTypes.DATE,

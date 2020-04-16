@@ -18,7 +18,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     completed: {
       allowNull: false,
-      type: DataTypes.BOOLEAN
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     },
     day: {
       type: DataTypes.INTEGER
