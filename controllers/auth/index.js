@@ -84,7 +84,7 @@ const whoami = async (req, res, next) => {
 
   const user = await userToFront(token.user_id);
 
-  res.send(user);
+  res.send({user});
 };
 
 const signUp = async (req, res, next) => {

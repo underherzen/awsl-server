@@ -16,18 +16,15 @@ const retrieveToken = async headers => {
 const userToFront = async id => {
   let user, userGuides, userGuideDays;
   [user, userGuides, userGuideDays] = await Promise.all([
-    User.findByPk(id),
+    User.findByPk(id, {raw: true}),
     UserGuide.findAll(
       {where: {user_id: id}}
     ),
     UserGuideDay.findAll({where: {user_id: id}})
   ]);
-  const response = {
-    user,
-    user_guides: [...userGuides],
-    user_guide_days: [...userGuideDays]
-  };
-  return response
+  user.user_guides = userGuides;
+  user.user_guide_days = userGuideDays;
+  return user
 };
 
 module.exports = {
