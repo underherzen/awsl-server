@@ -9,21 +9,25 @@ const STRIPE_CONSTANTS = {
   trialDays: 21
 };
 
-const STATUSES = {
+const STRIPE_STATUSES = {
   PAST_DUE: 'past_due',
   ACTIVE: 'active',
   TRIALING: 'trialing',
   INCOMPLETE: 'incomplete',
   PAUSED: 'paused',
+  UNPAID: 'unpaid',
+  CANCELED: 'canceled',
+  INCOMPLETE_EXPIRED: 'incomplete_expired'
 };
 
-const ACTIVE_STATUSES = {
-  PAST_DUE: 'past_due',
-  ACTIVE: 'active',
-  TRIALING: 'trialing',
-  INCOMPLETE: 'incomplete',
-  PAUSED: 'paused'
-};
+const ACTIVE_STATUSES = [
+  STRIPE_STATUSES.PAST_DUE,
+  STRIPE_STATUSES.ACTIVE,
+  STRIPE_STATUSES.TRIALING,
+  STRIPE_STATUSES.INCOMPLETE,
+  STRIPE_STATUSES.PAUSED,
+  STRIPE_STATUSES.INCOMPLETE_EXPIRED
+];
 
 const USER_TYPES = {
   ADMIN: 'admin',
@@ -34,5 +38,6 @@ const USER_TYPES = {
 module.exports = {
   STRIPE_CONSTANTS,
   USER_TYPES,
-  ACTIVE_STATUSES
+  ACTIVE_STATUSES,
+  STRIPE_STATUSES
 };

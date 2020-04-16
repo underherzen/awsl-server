@@ -59,6 +59,10 @@ module.exports = (sequelize, DataTypes) => {
     start_immediately: {
       type: DataTypes.BOOLEAN
     },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
     created_at: {
       allowNull: false,
       type: DataTypes.DATE,

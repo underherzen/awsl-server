@@ -19,6 +19,8 @@ router.use('/*', async (req, res, next) => {
   next()
 });
 
+
+//these routes if
 router.use('/guides', guideRoutes);
 
 

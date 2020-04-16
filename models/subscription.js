@@ -28,10 +28,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.DATE,
     },
-    is_trial: {
-      allowNull: true,
-      type: DataTypes.BOOLEAN,
-    },
     created_at: {
       allowNull: false,
       type: DataTypes.DATE,
