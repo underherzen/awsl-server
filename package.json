@@ -1,0 +1,31 @@
+{
+  "name": "awsl-server",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "prettify": "./node_modules/.bin/prettier --write ./src/**/*.{js,json}"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "dotenv": "^8.2.0",
+    "express": "~4.16.1",
+    "express-ip": "^1.0.4",
+    "http-errors": "~1.6.3",
+    "jade": "~1.11.0",
+    "libphonenumber-js": "^1.7.50",
+    "lodash": "^4.17.15",
+    "moment": "^2.24.0",
+    "morgan": "~1.9.1",
+    "mysql2": "^2.1.0",
+    "sequelize": "^5.21.6",
+    "stripe": "^8.39.2"
+  },
+  "devDependencies": {
+    "sequelize-cli": "^5.5.1"
+  }
+}
