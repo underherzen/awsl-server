@@ -53,7 +53,9 @@ Promise.all(tmp)
             overview: guide.overview,
             img_url: guide.imageUrl,
             url_safe_name: guide.urlSafeName,
-            video_url: guide.videoUrl
+            video_url: guide.videoUrl,
+            tags: guide.tags,
+            bullets: guide.bullets
           },
           {where: {old_guide_id: guide.id}}
         );

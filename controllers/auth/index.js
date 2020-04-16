@@ -6,7 +6,7 @@ const {User, Subscription} = require('../../models');
 const bcrypt = require('bcryptjs');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
 const {generateToken, retrieveToken, updateToken, retrieveCoupon, toValidPhone, googleCheckToken, fbCheckToken} = require('../../modules/auth');
-const {STRIPE_CONSTANTS, USER_TYPES} = require('../../constants');
+const {STRIPE_CONSTANTS, USER_TYPES, ACTIVE_STATUSES} = require('../../constants');
 const {Op} = require('sequelize');
 const http = require('http');
 const axios = require('axios');
@@ -207,6 +207,7 @@ const signUp = async (req, res, next) => {
     user_id: newUser.id,
     customer: customer.id,
     coupon,
+    status: subscription.status,
     next_payment: trialEnd.format('YYYY-MM-DD'),
     is_trial: true
   });

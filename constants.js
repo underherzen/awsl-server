@@ -9,6 +9,22 @@ const STRIPE_CONSTANTS = {
   trialDays: 21
 };
 
+const STATUSES = {
+  PAST_DUE: 'past_due',
+  ACTIVE: 'active',
+  TRIALING: 'trialing',
+  INCOMPLETE: 'incomplete',
+  PAUSED: 'paused',
+};
+
+const ACTIVE_STATUSES = {
+  PAST_DUE: 'past_due',
+  ACTIVE: 'active',
+  TRIALING: 'trialing',
+  INCOMPLETE: 'incomplete',
+  PAUSED: 'paused'
+};
+
 const USER_TYPES = {
   ADMIN: 'admin',
   USER: 'user',
@@ -17,5 +33,6 @@ const USER_TYPES = {
 
 module.exports = {
   STRIPE_CONSTANTS,
-  USER_TYPES
+  USER_TYPES,
+  ACTIVE_STATUSES
 };

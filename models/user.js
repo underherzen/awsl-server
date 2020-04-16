@@ -40,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     guide_id: {
       allowNull: true,
-      type: DataTypes.STRING(50),
+      type: DataTypes.INTEGER,
     },
     google_id: {
       allowNull: true,

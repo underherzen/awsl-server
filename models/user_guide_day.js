@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = (sequelize, DataTypes) => {
-  const UserGuide = sequelize.define('UserGuide', {
+  const UserGuideDay = sequelize.define('UserGuideDay', {
     id: {
       allowNull: false,
       autoIncrement: true,
@@ -16,9 +16,19 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.INTEGER
     },
-    completed: {
-      allowNull: false,
+    day: {
+      type: DataTypes.INTEGER
+    },
+    accepted: {
+      defaultValue: false,
       type: DataTypes.BOOLEAN
+    },
+    visited: {
+      defaultValue: false,
+      type: DataTypes.BOOLEAN
+    },
+    message_id: {
+      type: DataTypes.INTEGER
     },
     created_at: {
       allowNull: false,
@@ -29,13 +39,13 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
     },
   }, {
-    tableName: 'user_guides',
+    tableName: 'user_guide_days',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
   });
-  UserGuide.associate = function(models) {
+  UserGuideDay.associate = function(models) {
     // associations can be defined here
   };
-  return UserGuide;
+  return UserGuideDay;
 };

@@ -26,7 +26,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // render routes
-app.use('/users', usersRouter);
 app.use('/auth', authRoutes);
 app.use('/public', publicRoutes);
 app.use('/api', apiRoutes);

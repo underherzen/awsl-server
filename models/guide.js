@@ -46,6 +46,24 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.STRING
     },
+    tags: {
+      type: DataTypes.STRING,
+      get() {
+        return this.getDataValue('tags').split('_;_')
+      },
+      set(value) {
+        this.setDataValue('tags', value.join('_;_'))
+      }
+    },
+    bullets: {
+      type: DataTypes.STRING,
+      get() {
+        return this.getDataValue('bullets').split('_;_')
+      },
+      set(value) {
+        this.setDataValue('bullets', value.join('_;_'))
+      }
+    },
     created_at: {
       allowNull: false,
       type: DataTypes.DATE,

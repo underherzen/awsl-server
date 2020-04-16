@@ -1,36 +1,27 @@
 'use strict';
 
 module.exports = (sequelize, DataTypes) => {
-  const Subscription = sequelize.define('Subscription', {
+  const UserGuide = sequelize.define('UserGuide', {
     id: {
       allowNull: false,
+      autoIncrement: true,
       primaryKey: true,
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
     },
     user_id: {
       allowNull: false,
-      type: DataTypes.INTEGER,
+      type: DataTypes.INTEGER
     },
-    customer: {
+    guide_id: {
       allowNull: false,
-      unique: true,
-      type: DataTypes.STRING(100),
+      type: DataTypes.INTEGER
     },
-    status: {
+    completed: {
       allowNull: false,
-      type: DataTypes.STRING
+      type: DataTypes.BOOLEAN
     },
-    coupon: {
-      allowNull: true,
-      type: DataTypes.STRING(100),
-    },
-    next_payment: {
-      allowNull: false,
-      type: DataTypes.DATE,
-    },
-    is_trial: {
-      allowNull: true,
-      type: DataTypes.BOOLEAN,
+    day: {
+      type: DataTypes.INTEGER
     },
     created_at: {
       allowNull: false,
@@ -41,13 +32,13 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
     },
   }, {
-    tableName: 'subscriptions',
+    tableName: 'user_guides',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
   });
-  Subscription.associate = function(models) {
+  UserGuide.associate = function(models) {
     // associations can be defined here
   };
-  return Subscription;
+  return UserGuide;
 };
