@@ -1,6 +1,6 @@
 const fullGuides = require('./fullGuides.json');
 const {Guide, GuideDay} = require('./models');
-
+const guideList = require('./guideList.json');
 let tmp = [];
 for (let guide of Object.keys(fullGuides)) {
   // console.log(fullGuides[guide])
@@ -42,7 +42,25 @@ Promise.all(tmp)
         tmp.push(query)
       })
     });
-    Promise.all(tmp).then(() => console.log('DONE')).catch(e => console.log(e))
+    Promise.all(tmp).then(() => {
+      tmp = [];
+      for (let guide of guideList) {
+        const query = Guide.update(
+          {
+            name: guide.name,
+            coach: guide.coach.trim(),
+            credentials: guide.credentials,
+            overview: guide.overview,
+            img_url: guide.imageUrl,
+            url_safe_name: guide.urlSafeName,
+            video_url: guide.videoUrl
+          },
+          {where: {old_guide_id: guide.id}}
+        );
+        tmp.push(query)
+      }
+      Promise.all(tmp).then(response => console.log(response)).catch(e => console.log(e))
+    }).catch(e => console.log(e))
 
   });
 
