@@ -22,8 +22,8 @@ const userToFront = async id => {
     ),
     UserGuideDay.findAll({where: {user_id: id}})
   ]);
-  user.user_guides = userGuides;
-  user.user_guide_days = userGuideDays;
+  user.all_guides = userGuides;
+  user.all_guide_days = userGuideDays;
   return user
 };
 
