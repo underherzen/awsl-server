@@ -6,5 +6,7 @@ router.post('/select-guide', guideController.selectGuide);
 
 router.get('/guide-day', guideController.getGuideDay);
 
+router.get('/guide-days-slider', guideController.getGuideDaysForSlider);
+
 
 module.exports = router;
