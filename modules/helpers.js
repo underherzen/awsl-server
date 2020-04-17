@@ -2,7 +2,7 @@ const {Session, User, UserGuide, UserGuideDay} = require('../models');
 
 const retrieveToken = async headers => {
   let token = headers.authorization;
-  if (!token.startsWith('Bearer ')) {
+  if (!token || !token.startsWith('Bearer ')) {
     return null
   }
   token = token.split(' ').pop();

@@ -1,4 +1,4 @@
-const {UserGuide, User, UserGuideDay, Guide} = require('../../../models');
+const {UserGuide, User, UserGuideDay, Guide, GuideDay} = require('../../../models');
 const moment = require('moment');
 
 
@@ -53,6 +53,23 @@ const selectGuide = async (req, res, next) => {
   // res.sendStatus(400);
 };
 
+const getGuideDay = async (req, res, next) => {
+  const body = req.query;
+  const guideDay = await GuideDay.findOne({
+    where: {
+      guide_id: body.guideId,
+      day: +body.day
+    }
+  });
+  if (!guideDay) {
+    res.sendStatus(404);
+    return;
+  }
+
+  res.send({guide_day: guideDay});
+};
+
 module.exports = {
-  selectGuide
+  selectGuide,
+  getGuideDay
 };
