@@ -5,8 +5,22 @@ const personalizeTextMessage = (user, textMessage) => {
     const textPropertyName = propertyName.replace(/([a-z])([A-Z])/g, '$1\\s*$2');
     return string.replace(new RegExp(`@\\[${textPropertyName}]`, 'ig'), user[propertyName]);
   }, textMessage)
-}
+};
+
+const getTimezones = sendTime => {
+  const date = new Date();
+
+  const offsetHours = date.getUTCHours() - sendTime;
+  const tz = offsetHours < 0 ? offsetHours + 24 : offsetHours - 24;
+
+  const offsetMinutes = date.getUTCMinutes();
+  const timezones = [offsetHours, tz]
+    .filter(el => Math.abs(el) <= 12)
+    .map(el => el < 0 ? 60 * el + offsetMinutes : 60 * el - offsetMinutes);
+  return timezones
+};
 
 module.exports = {
-  personalizeTextMessage
+  personalizeTextMessage,
+  getTimezones
 };

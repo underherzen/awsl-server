@@ -1,38 +1,31 @@
 const {User, UserGuide, GuideDay, UserGuideDay} = require('../models');
 const {Op} = require('sequelize');
-const {personalizeTextMessage} = require('../modules/crons');
-
-const getTimezones = sendTime => {
-  const date = new Date();
-
-  const offsetHours = date.getUTCHours() - sendTime;
-  const tz = offsetHours < 0 ? offsetHours + 24 : offsetHours - 24;
-
-  const offsetMinutes = date.getUTCMinutes();
-  const timezones = [offsetHours, tz]
-    .filter(el => Math.abs(el) <= 12)
-    .map(el => el < 0 ? 60 * el + offsetMinutes : 60 * el - offsetMinutes);
-  return timezones
-};
+const {personalizeTextMessage, getTimezones} = require('../modules/crons');
 
 const dailyText = async () => {
-
-  const timezones = getTimezones(15);
+  const timezones = getTimezones(16);
   console.log('RUNNING DAILY-TEXT FROM TIMEZONE' + timezones);
+
   const users = await User.findAll({
     where: {
-      [Op.in]: {
-        timezone: timezones
+      timezone: {
+        [Op.in]: timezones
       },
-      [Op.ne]: {
-        guide_id: null
+      guide_id: {
+        [Op.ne]: null
       },
       is_active: true
     }
   });
+
   console.log('FOUND USERS TO DAILY TEXT', users.length);
   await Promise.all(users.map(async user => {
-    const userGuide = await UserGuide.findByPk(user.guide_id);
+    const userGuide = await UserGuide.findOne({
+      where: {
+        guide_id: user.guide_id,
+        user_id: user.id
+      }
+    });
     if (userGuide.day === 21) {
 
       const dbPromises = [
@@ -58,6 +51,7 @@ const dailyText = async () => {
         return;
       }
       // send sms to select guide
+      return
     }
 
     let dayToAssign = userGuide.day + 1;
@@ -86,18 +80,32 @@ const dailyText = async () => {
       });
       const message = personalizeTextMessage(user, guideDay.text_message);
       // send message
+      // then add message to db and go on
 
       dbPromises.push(
         UserGuideDay.create({
-
+          guide_id: user.guide_id,
+          day: dayToAssign,
+          user_id: user.id
+          // message_id: message.id
+        })
+      );
+    } else {
+      dbPromises.push(
+        UserGuideDay.create({
+          guide_id: user.guide_id,
+          day: dayToAssign,
+          user_id: user.id
+          // message_id: message.id
         })
       )
-
-
     }
-
-
-
+    try {
+      await Promise.all(dbPromises)
+    } catch (e) {
+      console.log('DB ERROR:');
+      console.log(e)
+    }
   }))
 };
 

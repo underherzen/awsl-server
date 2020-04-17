@@ -20,6 +20,9 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.STRING
     },
+    plan_id: {
+      type: DataTypes.STRING
+    },
     coupon: {
       allowNull: true,
       type: DataTypes.STRING(100),
@@ -27,6 +30,9 @@ module.exports = (sequelize, DataTypes) => {
     next_payment: {
       allowNull: false,
       type: DataTypes.DATE,
+    },
+    last4: {
+      type: DataTypes.INTEGER
     },
     created_at: {
       allowNull: false,

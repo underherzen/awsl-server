@@ -209,6 +209,7 @@ const signUp = async (req, res, next) => {
     user_id: newUser.id,
     customer: customer.id,
     coupon,
+    plan_id: product.id,
     status: subscription.status,
     next_payment: trialEnd.format('YYYY-MM-DD HH:mm:ss')
   });
