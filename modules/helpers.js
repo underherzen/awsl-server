@@ -29,5 +29,6 @@ const userToFront = async id => {
 
 module.exports = {
   retrieveToken,
-  userToFront
+  userToFront,
+
 };

@@ -35,9 +35,25 @@ const USER_TYPES = {
   MODERATOR: 'moderator'
 };
 
+const CRON_INTERVALS = {
+  EVERYSECOND: '* * * * * *',
+  EVERY2SECONDS: '*/2 * * * * *',
+  EVERY4SECONDS: '*/4 * * * * *',
+  EVERY10SECONDS: '*/10 * * * * *',
+  EVERY3SECONDS: '*/3 * * * * *',
+  EVERY30SECONDS: '*/30 * * * * *',
+  EVERYMINUTE: '*/1 * * * *',
+  EVERY10MINUTES: '*/10 * * * *',
+  EVERY1HOUR: '1 * * * *',
+  EVERYDAYAT7AMUTC: '0 7 * * *',
+  EVERYDAYAT10AMUTC: '0 10 * * *',
+  EVERYDAYAT1AMUTC: '0 1 * * *',
+};
+
 module.exports = {
   STRIPE_CONSTANTS,
   USER_TYPES,
   ACTIVE_STATUSES,
-  STRIPE_STATUSES
+  STRIPE_STATUSES,
+  CRON_INTERVALS
 };

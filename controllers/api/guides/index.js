@@ -9,7 +9,7 @@ const selectGuide = async (req, res, next) => {
   if (user.guide_id) {
     res.status(400).send({error: 'You already have guide'})
   }
-  const guide = await Guide.findByPk(body.guideId);
+  const guide = await Guide.findByPk(body.guide_id);
 
   if (!guide) {
     res.sendStatus(400);
