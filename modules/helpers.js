@@ -1,4 +1,4 @@
-const {Session, User, UserGuide, UserGuideDay} = require('../models');
+const {Session, User, UserGuide, UserGuideDay, Subscription} = require('../models');
 
 const retrieveToken = async headers => {
   let token = headers.authorization;
@@ -14,16 +14,20 @@ const retrieveToken = async headers => {
 };
 
 const userToFront = async id => {
-  let user, userGuides, userGuideDays;
-  [user, userGuides, userGuideDays] = await Promise.all([
+  let user, userGuides, userGuideDays, subscription;
+  [user, userGuides, userGuideDays, subscription] = await Promise.all([
     User.findByPk(id, {raw: true}),
     UserGuide.findAll(
       {where: {user_id: id}}
     ),
-    UserGuideDay.findAll({where: {user_id: id}})
+    UserGuideDay.findAll({where: {user_id: id}}),
+    Subscription.findOne({where: {user_id: id}})
   ]);
   user.all_guides = userGuides;
   user.all_guide_days = userGuideDays;
+  user.subscription_status = subscription.status;
+  user.next_payment = subscription.next_payment;
+  user.last4 = subscription.last4;
   return user
 };
 
