@@ -2,12 +2,18 @@ const {UserGuide, User, UserGuideDay, Guide, GuideDay} = require('../../../model
 const moment = require('moment');
 const {Op} = require('sequelize');
 
+const loadGuides = async (req, res, next) => {
+  const guides = await Guide.findAll();
+  res.send(guides)
+};
+
 
 const selectGuide = async (req, res, next) => {
   const body = req.body;
   let user = req.user;
   if (user.guide_id) {
     res.status(400).send({error: 'You already have guide'})
+    return;
   }
   const guide = await Guide.findByPk(body.guide_id);
 
@@ -26,7 +32,8 @@ const selectGuide = async (req, res, next) => {
   );
 
   if (previousSameGuide) {
-    res.status(400).send({error: 'You have already passed this guide!'})
+    res.status(400, {error: 'You have already passed this guide!'});
+    return;
   }
 
   const dayToAssign = user.is_active ? 1 : 0;
@@ -104,5 +111,6 @@ const getGuideDaysForSlider = async (req, res, next) => {
 module.exports = {
   selectGuide,
   getGuideDay,
-  getGuideDaysForSlider
+  getGuideDaysForSlider,
+  loadGuides
 };

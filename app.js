@@ -7,9 +7,6 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
 
-const usersRouter = require('./routes/users');
-const authRoutes = require('./routes/auth');
-const publicRoutes = require('./routes/public');
 const apiRoutes = require('./routes/api');
 const webhookRoutes = require('./routes/webhooks');
 
@@ -27,8 +24,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // render routes
-app.use('/auth', authRoutes);
-app.use('/public', publicRoutes);
 app.use('/api', apiRoutes);
 app.use('/webhooks', webhookRoutes);
 

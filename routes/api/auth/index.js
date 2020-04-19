@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const authController = require('../../controllers/auth');
+const authController = require('../../../controllers/api/auth');
 
 
 
@@ -11,8 +11,6 @@ router.post('/sign_up', authController.signUp);
 router.get('/whoami', authController.whoami);
 
 router.get('/user-lookup', authController.userLookup);
-
-
 
 
 
