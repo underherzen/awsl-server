@@ -1,9 +1,9 @@
-const {User, Token} = require('../../../models');
+const {User, Token} = require('../../../../models');
 const sgMail = require('@sendgrid/mail');
 const moment = require('moment');
 const bcrypt = require('bcryptjs');
-const {TOKEN_TYPES} = require('../../../constants');
-const {generateRandString} = require('../../../modules/helpers');
+const {TOKEN_TYPES} = require('../../../../constants');
+const {generateRandString} = require('../../../../modules/helpers');
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 

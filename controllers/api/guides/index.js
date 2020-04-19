@@ -12,7 +12,7 @@ const selectGuide = async (req, res, next) => {
   const body = req.body;
   let user = req.user;
   if (user.guide_id) {
-    res.status(400).send({error: 'You already have guide'})
+    res.status(400).send({error: 'You already have guide'});
     return;
   }
   const guide = await Guide.findByPk(body.guide_id);
