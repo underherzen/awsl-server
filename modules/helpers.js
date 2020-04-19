@@ -27,8 +27,14 @@ const userToFront = async id => {
   return user
 };
 
+const generateRandString = () => {
+  return Math.random().toString(36).substring(2, 25) +
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15);
+};
+
 module.exports = {
   retrieveToken,
   userToFront,
-
+  generateRandString
 };

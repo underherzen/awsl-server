@@ -5,12 +5,7 @@ const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
 const {User, Session} = require('../../models');
 const libphonenumber = require('libphonenumber-js');
 const axios = require('axios');
-
-const generateRandString = () => {
-  return Math.random().toString(36).substring(2, 25) +
-    Math.random().toString(36).substring(2, 15) +
-    Math.random().toString(36).substring(2, 15);
-};
+const {generateRandString} = require('../helpers');
 
 const generateToken = async ({id}) => {
   const expiry = moment().add(1, 'd').format('YYYY-MM-DD HH:mm:ss');

@@ -40,6 +40,10 @@ const USER_TYPES = {
   MODERATOR: 'moderator'
 };
 
+const TOKEN_TYPES = {
+  RESET_PASSWORD: 'reset_password'
+};
+
 const CRON_INTERVALS = {
   EVERYSECOND: '* * * * * *',
   EVERY2SECONDS: '*/2 * * * * *',
@@ -61,5 +65,6 @@ module.exports = {
   ACTIVE_STATUSES,
   STRIPE_STATUSES,
   CRON_INTERVALS,
-  INACTIVE_STATUSES
+  INACTIVE_STATUSES,
+  TOKEN_TYPES
 };
