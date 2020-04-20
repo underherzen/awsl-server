@@ -59,6 +59,8 @@ const login = async (req, res, next) => {
     return;
   }
 
+  user = await userToFront(user.id);
+
   const response = {
     token,
     user
