@@ -5,7 +5,7 @@ const moment = require('moment');
 const {User, Subscription} = require('../../../models');
 const bcrypt = require('bcryptjs');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
-const {generateToken, retrieveToken, updateToken, retrieveCoupon, toValidPhone, googleCheckToken, fbCheckToken} = require('../../../modules/auth');
+const {generateToken, retrieveToken, updateToken, retrieveCoupon, toValidPhone, googleCheckToken, fbCheckToken} = require('../../../modules/api/auth');
 const {userToFront} = require('../../../modules/helpers');
 const {STRIPE_CONSTANTS, USER_TYPES} = require('../../../constants');
 const {Op} = require('sequelize');
@@ -58,6 +58,8 @@ const login = async (req, res, next) => {
     res.sendStatus(404);
     return;
   }
+
+  user = await userToFront(user.id);
 
   const response = {
     token,

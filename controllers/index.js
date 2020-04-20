@@ -1,4 +1,4 @@
-const {User} = require('../models');
+const {User, Subscription} = require('../models');
 const {retrieveToken} = require('../modules/helpers');
 const moment = require('moment');
 
@@ -31,7 +31,20 @@ const userIsAuth = async (req, res, next) => {
   next()
 };
 
+const userHasSubscription = async (req, res, next) => {
+  let user = req.user;
+  const subscription = await Subscription.findOne({where: {user_id: user.id}});
+
+  if (!subscription) {
+    res.sendStatus(400);
+    return;
+  }
+  req.subscription = subscription;
+  next();
+};
+
 module.exports= {
   isUserActive,
-  userIsAuth
+  userIsAuth,
+  userHasSubscription
 };

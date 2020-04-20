@@ -1,7 +1,7 @@
 const { userToFront } = require("../../../modules/helpers");
 const moment = require("moment");
 const { Op } = require("sequelize");
-const { retrieveToken } = require("../../../modules/auth");
+const { retrieveToken } = require("../../../modules/api/auth");
 const {
   UserGuide,
   User,

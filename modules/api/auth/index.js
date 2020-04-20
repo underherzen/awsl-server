@@ -2,10 +2,10 @@ const bcrypt = require('bcryptjs');
 const moment = require('moment');
 const _ = require('lodash');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
-const {User, Session} = require('../../models');
+const {User, Session} = require('../../../models');
 const libphonenumber = require('libphonenumber-js');
 const axios = require('axios');
-const {generateRandString} = require('../helpers');
+const {generateRandString} = require('../../helpers');
 
 const generateToken = async ({id}) => {
   const expiry = moment().add(1, 'd').format('YYYY-MM-DD HH:mm:ss');

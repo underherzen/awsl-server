@@ -26,7 +26,8 @@ const subscriptionUpdateWebhook = async (req, res, next) => {
       status: subscriptionObj.status,
       next_payment: moment(subscriptionObj.current_period_end * 1000).format('YYYY-MM-DD HH:mm:ss'),
       plan_id: subscriptionObj.plan.id,
-      coupon: couponId
+      coupon: couponId,
+      cancel_at_period_end: subscriptionObj.cancel_at_period_end
     },
     {where: {id: subscription.id}}
   );

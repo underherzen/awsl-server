@@ -106,7 +106,31 @@ const resetPassword = async (req, res, next) => {
 
 };
 
+const changePassword = async (req, res, next) => {
+  const body = req.body;
+  let user = req.user;
+  console.log(body)
+
+  const passwordsAreEqual = await bcrypt.compare(body.old_password, user.password);
+  console.log(passwordsAreEqual)
+
+  if (!passwordsAreEqual) {
+    res.status(400).send({error: 'Old password doesn`t match'});
+    return;
+  }
+
+  if (body.password !== body.confirm_password) {
+    res.status(400).send({error: 'Passwords don`t match'});
+    return;
+  }
+
+  const newPassword = await bcrypt.hash(body.password, 10);
+  await User.update({password: newPassword}, {where: {id: user.id}});
+  res.send({message: 'Password has changed'})
+};
+
 module.exports = {
   sendResetPasswordEmail,
-  resetPassword
+  resetPassword,
+  changePassword
 };

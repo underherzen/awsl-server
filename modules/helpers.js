@@ -28,6 +28,7 @@ const userToFront = async id => {
   user.subscription_status = subscription.status;
   user.next_payment = subscription.next_payment;
   user.last4 = subscription.last4;
+  user.cancel_at_period_end = subscription.cancel_at_period_end;
   return user
 };
 

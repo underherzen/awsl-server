@@ -27,6 +27,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       type: DataTypes.STRING(100),
     },
+    cancel_at_period_end: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     next_payment: {
       allowNull: false,
       type: DataTypes.DATE,
