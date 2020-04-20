@@ -1,9 +1,11 @@
-const {User, UserGuide, GuideDay, UserGuideDay} = require('../models');
+const {User, UserGuide, GuideDay, UserGuideDay, Message} = require('../models');
 const {Op} = require('sequelize');
-const {personalizeTextMessage, getTimezones} = require('../modules/crons');
+const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const {personalizeTextMessage, getTimezones, sendInternationalSms, getTwilioNumber} = require('../modules/crons');
+const {MESSAGES_STATUSES, MESSAGES_TYPES} = require('../constants');
 
 const dailyText = async () => {
-  const timezones = getTimezones(16);
+  const timezones = getTimezones(6);
   console.log('RUNNING DAILY-TEXT FROM TIMEZONE' + timezones);
 
   const users = await User.findAll({
@@ -26,6 +28,7 @@ const dailyText = async () => {
         user_id: user.id
       }
     });
+
     if (userGuide.day === 21) {
 
       const dbPromises = [
@@ -50,7 +53,41 @@ const dailyText = async () => {
       if (!user.can_receive_texts) {
         return;
       }
+      const guideDay = await GuideDay.findOne({where: {day: 22, guide_id: userGuide.guide_id}});
       // send sms to select guide
+      const messageText = personalizeTextMessage(user, guideDay.text_message);
+      try {
+        const messageObject = {
+          from: await getTwilioNumber(client, user.phone),
+          body: `${messageText}`,
+          to: user.phone,
+          statusCallback: `${process.env.BASE_URL}/webhooks/twilio/status-callback/`,
+          statusCallbackMethod: 'POST',
+          // statusCallbackEvent: ['failed', 'undelivered'],
+        };
+        const response = await sendInternationalSms(client, messageObject);
+        const message = await Message.create({
+          user_id: user.id,
+          type: MESSAGES_TYPES.DAILY,
+          twilio_sms_id: response.sid,
+          status: response.status,
+          guide_id: userGuide.guide_id,
+          day: 22
+        });
+        await UserGuideDay.create({
+          user_id: user.id,
+          guide_id: userGuide.guide_id,
+          day: 22,
+          message_id: message.id
+        })
+      } catch (e) {
+        console.log(e);
+        await UserGuideDay.create({
+          user_id: user.id,
+          guide_id: userGuide.guide_id,
+          day: 22
+        })
+      }
       return
     }
 
@@ -78,7 +115,28 @@ const dailyText = async () => {
           guide_id: user.guide_id
         }
       });
-      const message = personalizeTextMessage(user, guideDay.text_message);
+      const messageText = personalizeTextMessage(user, guideDay.text_message);
+      let message;
+      try {
+        const messageObject = {
+          from: await getTwilioNumber(client, user.phone),
+          body: `${messageText}`,
+          to: user.phone,
+          statusCallback: `${process.env.BASE_URL}/webhooks/twilio/status-callback/`,
+          statusCallbackMethod: 'POST',
+        };
+        const response = await sendInternationalSms(client, messageObject);
+        message = await Message.create({
+          user_id: user.id,
+          type: MESSAGES_TYPES.DAILY,
+          twilio_sms_id: response.sid,
+          status: response.status,
+          guide_id: userGuide.guide_id,
+          day: dayToAssign
+        });
+      } catch (e) {
+        console.log(e)
+      }
       // send message
       // then add message to db and go on
 
@@ -86,8 +144,8 @@ const dailyText = async () => {
         UserGuideDay.create({
           guide_id: user.guide_id,
           day: dayToAssign,
-          user_id: user.id
-          // message_id: message.id
+          user_id: user.id,
+          message_id: message ? message.id : null
         })
       );
     } else {
@@ -96,7 +154,6 @@ const dailyText = async () => {
           guide_id: user.guide_id,
           day: dayToAssign,
           user_id: user.id
-          // message_id: message.id
         })
       )
     }

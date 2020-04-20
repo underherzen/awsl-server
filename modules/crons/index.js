@@ -20,7 +20,31 @@ const getTimezones = sendTime => {
   return timezones
 };
 
+const sendInternationalSms = async (client, messageObject) => {
+  let res;
+  try {
+    res = await client.messages.create(messageObject);
+  } catch (e) {
+    // 21612 Twilio error - is'nt reachable for short code
+    if (e.code === 21612) {
+      messageObject.from = process.env.INTERNATIONAL_PHONE;
+      res = await client.messages.create(messageObject);
+    } else {
+      throw e
+    }
+  }
+  return res;
+};
+
+const getTwilioNumber = async (client, from) => {
+  const phoneData = await client.lookups.phoneNumbers(from).fetch();
+  const isUSPhone = phoneData.countryCode === "US";
+  return isUSPhone ? process.env.PHONE : process.env.INTERNATIONAL_PHONE
+};
+
 module.exports = {
   personalizeTextMessage,
-  getTimezones
+  getTimezones,
+  sendInternationalSms,
+  getTwilioNumber
 };

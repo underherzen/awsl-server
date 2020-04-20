@@ -9,7 +9,8 @@ const tableNames = [
   'UserGuide',
   'UserGuideDay',
   'Token',
-  'ResetCurrentCourseToken'
+  'ResetCurrentCourseToken',
+  'Message'
 ];
 module.exports = {
   up: async function(queryInterface, Sequelize) {

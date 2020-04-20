@@ -44,6 +44,30 @@ const TOKEN_TYPES = {
   RESET_PASSWORD: 'reset_password'
 };
 
+const MESSAGES_TYPES = {
+  DAILY: 'daily',
+  AFTER_REGISTRATION: 'after_registration',
+
+};
+
+const MESSAGES_STATUSES = {
+  ACCEPTED: 'accepted',
+  QUEUED: 'queued',
+  SENDING: 'sending',
+  SENT: 'sent',
+  FAILED: 'failed',
+  DELIVERED: 'delivered',
+  UNDELIVERED: 'undelivered',
+  RECEIVING: 'receiving',
+  RECEIVED: 'received',
+  READ: 'read'
+};
+
+const FAILED_MESSAGES_STATUSES = [
+  MESSAGES_STATUSES.FAILED,
+  MESSAGES_STATUSES.UNDELIVERED
+];
+
 const CRON_INTERVALS = {
   EVERYSECOND: '* * * * * *',
   EVERY2SECONDS: '*/2 * * * * *',
@@ -66,5 +90,8 @@ module.exports = {
   STRIPE_STATUSES,
   CRON_INTERVALS,
   INACTIVE_STATUSES,
-  TOKEN_TYPES
+  TOKEN_TYPES,
+  MESSAGES_TYPES,
+  MESSAGES_STATUSES,
+  FAILED_MESSAGES_STATUSES
 };
