@@ -217,9 +217,10 @@ const signUp = async (req, res, next) => {
   });
 
   const token = await generateToken(newUser);
+  const user = await userToFront(newUser.id);
 
   const response = {
-    user: newUser,
+    user,
     token
   };
 
