@@ -1,13 +1,14 @@
-const { userToFront } = require("../../../modules/helpers");
+const {userToFront} = require("../../../modules/helpers");
 const moment = require("moment");
-const { Op } = require("sequelize");
-const { retrieveToken } = require("../../../modules/api/auth");
+const {Op} = require("sequelize");
+const {retrieveToken} = require("../../../modules/api/auth");
 const {
   UserGuide,
   User,
   UserGuideDay,
   Guide,
   GuideDay,
+  ResetCurrentCourseToken
 } = require("../../../models");
 
 const loadGuides = async (req, res, next) => {
@@ -16,8 +17,8 @@ const loadGuides = async (req, res, next) => {
 };
 
 const selectGuide = async (req, res, next) => {
-  const { body, headers } = req;
-  let { user } = req;
+  const {body, headers} = req;
+  let {user} = req;
 
   const token = await retrieveToken(headers);
 
@@ -27,7 +28,7 @@ const selectGuide = async (req, res, next) => {
   }
 
   if (user.guide_id) {
-    res.status(400).send({ error: "You already have guide" });
+    res.status(400).send({error: "You already have guide"});
     return;
   }
 
@@ -46,7 +47,7 @@ const selectGuide = async (req, res, next) => {
   });
 
   if (previousSameGuide) {
-    res.status(400, { error: "You have already passed this guide!" });
+    res.status(400, {error: "You have already passed this guide!"});
     return;
   }
 
@@ -62,7 +63,7 @@ const selectGuide = async (req, res, next) => {
       guide_id: guide.id,
       day: dayToAssign,
     }),
-    User.update({ guide_id: guide.id }, { where: { id: user.id } }),
+    User.update({guide_id: guide.id}, {where: {id: user.id}}),
   ];
 
   if (user.is_active) {
@@ -80,7 +81,7 @@ const selectGuide = async (req, res, next) => {
   user = await userToFront(token.user_id);
   const redirect = `/guides/${guide.url_safe_name}/intro/`;
 
-  res.send({ user, redirect });
+  res.send({user, redirect});
   // res.sendStatus(400);
 };
 
@@ -97,7 +98,7 @@ const getGuideDay = async (req, res, next) => {
     return;
   }
 
-  res.send({ guide_day: guideDay });
+  res.send({guide_day: guideDay});
 };
 
 const getGuideDaysForSlider = async (req, res, next) => {
@@ -121,7 +122,60 @@ const getGuideDaysForSlider = async (req, res, next) => {
     return;
   }
 
-  res.send({ guide_days: guideDays });
+  res.send({guide_days: guideDays});
+};
+
+const resetGuide = async (req, res, next) => {
+  let user = req.user;
+  const body = req.body;
+
+  if (!user.guide_id) {
+    res.status(400).send({error: 'You don`t have any guides now'});
+    return;
+  }
+
+  if (!body.token) {
+    res.sendStatus(400);
+    return;
+  }
+
+  const token = await ResetCurrentCourseToken.findOne({where: {token: body.token}});
+  console.log(token)
+
+  if (!token || moment() > moment(token.expiry) || token.attempts_left === 0) {
+    res.status(400).send({error: 'You can`t reset course now'})
+    return;
+  }
+
+  await Promise.all([
+    UserGuide.destroy({
+      where: {
+        user_id: user.id,
+        guide_id: user.guide_id
+      }
+    }),
+    UserGuideDay.destroy({
+      where: {
+        user_id: user.id,
+        guide_id: user.guide_id
+      }
+    }),
+    User.update({guide_id: null}, {
+      where: {
+        id: user.id
+      }
+    }),
+    ResetCurrentCourseToken.update({
+      attempts_left: token.attempts_left - 1
+    }, {
+      where: {
+        user_id: user.id
+      }
+    })
+  ]);
+
+  user = await userToFront(user.id);
+  res.send({user});
 };
 
 module.exports = {
@@ -129,4 +183,5 @@ module.exports = {
   getGuideDay,
   getGuideDaysForSlider,
   loadGuides,
+  resetGuide
 };

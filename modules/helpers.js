@@ -1,4 +1,4 @@
-const {Session, User, UserGuide, UserGuideDay, Subscription} = require('../models');
+const {Session, User, UserGuide, UserGuideDay, Subscription, ResetCurrentCourseToken} = require('../models');
 
 const retrieveToken = async headers => {
   let token = headers.authorization;
@@ -14,14 +14,15 @@ const retrieveToken = async headers => {
 };
 
 const userToFront = async id => {
-  let user, userGuides, userGuideDays, subscription;
-  [user, userGuides, userGuideDays, subscription] = await Promise.all([
+  let user, userGuides, userGuideDays, subscription, resetCurrentCourseToken;
+  [user, userGuides, userGuideDays, subscription, resetCurrentCourseToken] = await Promise.all([
     User.findByPk(id, {raw: true}),
     UserGuide.findAll(
       {where: {user_id: id}}
     ),
     UserGuideDay.findAll({where: {user_id: id}}),
-    Subscription.findOne({where: {user_id: id}})
+    Subscription.findOne({where: {user_id: id}}),
+    ResetCurrentCourseToken.findOne({where: {user_id: id}})
   ]);
   user.all_guides = userGuides;
   user.all_guide_days = userGuideDays;
@@ -29,6 +30,8 @@ const userToFront = async id => {
   user.next_payment = subscription.next_payment;
   user.last4 = subscription.last4;
   user.cancel_at_period_end = subscription.cancel_at_period_end;
+  user.reset_current_course_token = resetCurrentCourseToken.token;
+  user.reset_current_course_attempts = resetCurrentCourseToken.attempts_left;
   return user
 };
 

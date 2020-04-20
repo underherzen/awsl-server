@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const moment = require('moment');
 const _ = require('lodash');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
-const {User, Session} = require('../../../models');
+const {User, Session, ResetCurrentCourseToken} = require('../../../models');
 const libphonenumber = require('libphonenumber-js');
 const axios = require('axios');
 const {generateRandString} = require('../../helpers');
@@ -99,6 +99,26 @@ const fbCheckToken = async token => {
   }
 };
 
+/**
+ * doesnt update db but generates token that doest exist in db
+ * @param userId
+ * @returns {Promise<void>}
+ */
+const generateResetToken = async (userId) => {
+  let doNext = true;
+  let count = 0;
+  while (doNext && count < 10) {
+    const token = generateRandString();
+    const existingToken = await ResetCurrentCourseToken.findOne({where: {token}});
+    if (!existingToken) {
+      doNext = false;
+      return token
+    }
+    count += 1;
+  }
+  return null
+};
+
 
 module.exports = {
   generateToken,
@@ -107,5 +127,6 @@ module.exports = {
   retrieveCoupon,
   toValidPhone,
   googleCheckToken,
-  fbCheckToken
+  fbCheckToken,
+  generateResetToken
 };

@@ -18,5 +18,9 @@ router.get('/guide-day', guideController.getGuideDay);
 
 router.get('/guide-days-slider', guideController.getGuideDaysForSlider);
 
+router.post('/reset-guide', guideController.resetGuide);
+
+
+
 
 module.exports = router;

@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const _ = require('lodash');
 const moment = require('moment');
-const {User, Subscription} = require('../../../models');
+const {User, Subscription, ResetCurrentCourseToken} = require('../../../models');
 const bcrypt = require('bcryptjs');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
-const {generateToken, retrieveToken, updateToken, retrieveCoupon, toValidPhone, googleCheckToken, fbCheckToken} = require('../../../modules/api/auth');
+const {generateToken, retrieveToken, updateToken, retrieveCoupon, toValidPhone, googleCheckToken, fbCheckToken, generateResetToken} = require('../../../modules/api/auth');
 const {userToFront} = require('../../../modules/helpers');
 const {STRIPE_CONSTANTS, USER_TYPES} = require('../../../constants');
 const {Op} = require('sequelize');
@@ -216,6 +216,14 @@ const signUp = async (req, res, next) => {
     next_payment: trialEnd.format('YYYY-MM-DD HH:mm:ss')
   });
 
+  const resetToken = await generateResetToken(newUser.id);
+  await ResetCurrentCourseToken.create({
+    user_id: newUser.id,
+    token: resetToken,
+    attempts_left: 3,
+    expiry: trialEnd.format('YYYY-MM-DD HH:mm:ss')
+  });
+
   const token = await generateToken(newUser);
   const user = await userToFront(newUser.id);
 
@@ -229,7 +237,6 @@ const signUp = async (req, res, next) => {
 
 const userLookup = async (req, res, next) => {
   const body = req.query;
-  console.log(body);
   const params = {};
   if (body.email) {
     params.email = body.email
