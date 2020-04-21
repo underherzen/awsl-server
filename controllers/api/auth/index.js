@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const _ = require('lodash');
 const moment = require('moment');
-const {User, Subscription, ResetCurrentCourseToken} = require('../../../models');
+const {User, Subscription, ResetCurrentCourseToken, Token} = require('../../../models');
 const bcrypt = require('bcryptjs');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
 const {generateToken, retrieveToken, updateToken, retrieveCoupon, toValidPhone, googleCheckToken, fbCheckToken, generateResetToken} = require('../../../modules/api/auth');
 const {userToFront} = require('../../../modules/helpers');
-const {STRIPE_CONSTANTS, USER_TYPES} = require('../../../constants');
+const {STRIPE_CONSTANTS, USER_TYPES, TOKEN_TYPES} = require('../../../constants');
 const {Op} = require('sequelize');
 const http = require('http');
 const axios = require('axios');
@@ -176,7 +176,8 @@ const signUp = async (req, res, next) => {
     last_name: body.lastName,
     timezone: body.timezone,
     start_day: startDay,
-    start_immediately: !body.startDay
+    start_immediately: !body.startDay,
+    is_active: !body.startDay
   };
 
   const newUser = await User.create(params);
@@ -258,9 +259,30 @@ const userLookup = async (req, res, next) => {
   res.sendStatus(204)
 };
 
+const authBySmsToken = async (req, res, next) => {
+  const body = req.body;
+  if (!body.token || !body.user_id) {
+    res.sendStatus(401);
+    return;
+  }
+  const token = await Token.findOne({
+    where: {
+      token: body.token,
+      user_id: body.user_id,
+      type: TOKEN_TYPES.SMS_AUTH
+    }
+  });
+  if (!token) {
+    res.sendStatus(404);
+  }
+  const authToken = await generateToken({id: body.user_id});
+  res.send({token: authToken});
+};
+
 module.exports = {
   whoami,
   login,
   signUp,
-  userLookup
+  userLookup,
+  authBySmsToken
 };

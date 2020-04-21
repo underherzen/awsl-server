@@ -41,7 +41,8 @@ const USER_TYPES = {
 };
 
 const TOKEN_TYPES = {
-  RESET_PASSWORD: 'reset_password'
+  RESET_PASSWORD: 'reset_password',
+  SMS_AUTH: 'sms_auth' // these tokens work forever FOR NOW
 };
 
 const MESSAGES_TYPES = {
@@ -83,6 +84,37 @@ const CRON_INTERVALS = {
   EVERYDAYAT1AMUTC: '0 1 * * *',
 };
 
+const REPLY_TEXTS = {
+  YES: `Let’s go! First challenge is coming soon! Start by saving us in your phone as LiveItUp (we’re besties now!). Done? Great! Now, click the link to join the LiveItUp community. (step 2 of 2): {1}`,
+
+  STOP:
+    'We’re sad to see you go {0}! This means that you won’t be receiving challenges via text from LiveItUp.' +
+    ' If you would still like to receive texts please reply UNSTOP to start receiving texts from LiveItUp again at any' +
+    ' time. Challenges will still be available in your members area until your membership is complete. Can we ask—why' +
+    ' did you decided to stop texts from LiveItUp?',
+
+  HELP:
+    'We’re here for you {0}. Email us at aly@goliveitup.com, and we’ll get back to you ASAP.',
+
+  UNSTOP:
+    'We missed you! So glad to see you back. Pick your next challenge here: {0}',
+
+  COMMUNITY: `Hi, Radha here with LiveItUp! Thanks for texting! Are you ready to take action and find your dream community with my 21-Day Challenge? Here’s how to join:
+1. Go to the link below
+2. Click Start Free Trial
+3. Set your start date to 4/9
+4. Choose the Belong: Find Your People Challenge
+Your journey to find your people starts Monday! And so does your 7 day FREE Trial :) I’ll see you then in our online community—can’t wait to connect. Let's GO!! https://goliveitup.com/?_from=radha&signup=true`,
+};
+
+const REPLY_COMMANDS = {
+  YES: 'YES',
+  STOP: 'STOP',
+  UNSTOP: 'UNSTOP',
+  HELP: 'HELP',
+  COMMUNITY: 'COMMUNITY',
+};
+
 module.exports = {
   STRIPE_CONSTANTS,
   USER_TYPES,
@@ -93,5 +125,7 @@ module.exports = {
   TOKEN_TYPES,
   MESSAGES_TYPES,
   MESSAGES_STATUSES,
-  FAILED_MESSAGES_STATUSES
+  FAILED_MESSAGES_STATUSES,
+  REPLY_TEXTS,
+  REPLY_COMMANDS
 };

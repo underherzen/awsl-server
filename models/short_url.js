@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = (sequelize, DataTypes) => {
-  const Token = sequelize.define('Token', {
+  const ShortUrl = sequelize.define('ShortUrl', {
     id: {
       allowNull: false,
       autoIncrement: true,
@@ -12,22 +12,14 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.INTEGER
     },
-    token: {
+    short_url: {
       allowNull: false,
       type: DataTypes.STRING,
       unique: true
     },
-    type: {
+    full_url: {
       allowNull: false,
       type: DataTypes.STRING
-    },
-    expiry: {
-      // allowNull: false,
-      type: DataTypes.DATE
-    },
-    is_used: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false
     },
     created_at: {
       allowNull: false,
@@ -38,13 +30,13 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
     },
   }, {
-    tableName: 'tokens',
+    tableName: 'short_urls',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
   });
-  Token.associate = function(models) {
+  ShortUrl.associate = function(models) {
     // associations can be defined here
   };
-  return Token;
+  return ShortUrl;
 };

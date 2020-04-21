@@ -23,6 +23,21 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.STRING
     },
+    from: {
+      // allowNull: false,
+      type: DataTypes.STRING
+    },
+    to: {
+      // allowNull: false,
+      type: DataTypes.STRING
+    },
+    text_message: {
+      // allowNull: false,
+      type: DataTypes.STRING(2048)
+    },
+    media_url: {
+      type: DataTypes.STRING(2048)
+    },
     attempts_left: {
       type: DataTypes.INTEGER,
       defaultValue: 3

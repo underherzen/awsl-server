@@ -12,6 +12,8 @@ router.get('/whoami', authController.whoami);
 
 router.get('/user-lookup', authController.userLookup);
 
+router.post('/auth-by-sms', authController.authBySmsToken);
+
 
 
 module.exports = router;
