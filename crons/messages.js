@@ -1,8 +1,32 @@
-const {User, UserGuide, GuideDay, UserGuideDay, Message} = require('../models');
+const {User, UserGuide, GuideDay, UserGuideDay, Message, Guide} = require('../models');
 const {Op} = require('sequelize');
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-const {personalizeTextMessage, getTimezones, sendInternationalSms, getTwilioNumber} = require('../modules/crons');
-const {MESSAGES_STATUSES, MESSAGES_TYPES} = require('../constants');
+const moment = require('moment');
+const {personalizeTextMessage, getTimezones, sendInternationalSms, getTwilioNumber, sendUndeliveredMessage} = require('../modules/twilio');
+const urlShortener = require('../modules/urlShortener');
+const shortener = new urlShortener();
+const {imageExists, generateSmsAuthToken} = require('../modules/helpers');
+const {MESSAGES_STATUSES, MESSAGES_TYPES, FAILED_MESSAGES_STATUSES} = require('../constants');
+
+const sendUndeliveredDailyMessages = async () => {
+  let dailyUndeliveredMessages = await Message.findAll({
+    where: {
+      status: {
+        [Op.in]: FAILED_MESSAGES_STATUSES
+      },
+      type: MESSAGES_TYPES.DAILY,
+      attempts_left: {
+        [Op.gt]: 0
+      }
+    }
+  });
+  dailyUndeliveredMessages = dailyUndeliveredMessages
+    .filter(message => {
+      const diff = moment().diff(moment(message.updated_at), 'h');
+      return diff === 1
+    });
+  await Promise.all(dailyUndeliveredMessages.map(message => sendUndeliveredMessage(message, client)))
+};
 
 const dailyText = async () => {
   const timezones = getTimezones(6);
@@ -22,13 +46,22 @@ const dailyText = async () => {
 
   console.log('FOUND USERS TO DAILY TEXT', users.length);
   await Promise.all(users.map(async user => {
-    const userGuide = await UserGuide.findOne({
-      where: {
-        guide_id: user.guide_id,
-        user_id: user.id
-      }
-    });
+    const [userGuide, guide] = await Promise.all([
+      UserGuide.findOne({
+        where: {
+          guide_id: user.guide_id,
+          user_id: user.id
+        }
+      }),
+      Guide.findByPk(user.guide_id)
+    ]);
+    const trackingParams = encodeURIComponent(
+      `utm_source=daily texts&utm_medium=${guide.name} texts&utm_campaign=0 texts`
+    );
 
+    /*
+    IF IT IS THE LAST DAY
+     */
     if (userGuide.day === 21) {
 
       const dbPromises = [
@@ -51,23 +84,37 @@ const dailyText = async () => {
 
       // if user can receive texts then send one
       if (!user.can_receive_texts) {
+        await UserGuideDay.create({
+          user_id: user.id,
+          guide_id: userGuide.guide_id,
+          day: 22,
+        });
         return;
       }
       const guideDay = await GuideDay.findOne({where: {day: 22, guide_id: userGuide.guide_id}});
+      const smsAuthToken = await generateSmsAuthToken(user.id);
+      const selectGuideUrl = `${process.env.BASE_URL}/guides/`;
+      const messageUrl = await shortener.createShort(
+        `${process.env.BASE_URL}?redirect_url=${selectGuideUrl}&uts=${smsAuthToken}&ui=${user.id}&${trackingParams}`,
+        user.id
+      );
       // send sms to select guide
       const messageText = personalizeTextMessage(user, guideDay.text_message);
       try {
         const messageObject = {
           from: await getTwilioNumber(client, user.phone),
-          body: `${messageText}`,
+          body: `${messageText}\n${messageUrl}`,
           to: user.phone,
-          statusCallback: `${process.env.BASE_URL}/webhooks/twilio/status-callback/`,
-          statusCallbackMethod: 'POST',
-          // statusCallbackEvent: ['failed', 'undelivered'],
+          statusCallback: `${process.env.API_URL}/webhooks/twilio/status-callback/`,
+          statusCallbackMethod: 'POST'
         };
         const response = await sendInternationalSms(client, messageObject);
         const message = await Message.create({
           user_id: user.id,
+          from: messageObject.from,
+          to: messageObject.to,
+          text_message: messageObject.body,
+          media_url: messageObject.mediaUrl || null,
           type: MESSAGES_TYPES.DAILY,
           twilio_sms_id: response.sid,
           status: response.status,
@@ -90,6 +137,10 @@ const dailyText = async () => {
       }
       return
     }
+
+    /*
+    END OF LAST DAY LOGIC
+     */
 
     let dayToAssign = userGuide.day + 1;
     // prevent from over going just in case
@@ -116,18 +167,35 @@ const dailyText = async () => {
         }
       });
       const messageText = personalizeTextMessage(user, guideDay.text_message);
+      const imageQuoteUrl = `${process.env.BASE_URL}/img/quotes/${guide.old_guide_id}/${dayToAssign}.png`;
+      const imageIsExisting = await imageExists(imageQuoteUrl);
+
+      const smsAuthToken = await generateSmsAuthToken(user.id);
+      const guideUrl = `${process.env.BASE_URL}/guides/${guide.url_safe_name}/day-${dayToAssign}/`;
+      const messageUrl = await shortener.createShort(
+        `${process.env.BASE_URL}?redirect_url=${guideUrl}&uts=${smsAuthToken}&ui=${user.id}&${trackingParams}`,
+        user.id
+      );
+
       let message;
       try {
         const messageObject = {
           from: await getTwilioNumber(client, user.phone),
-          body: `${messageText}`,
+          body: `${messageText}\n${messageUrl}`,
           to: user.phone,
-          statusCallback: `${process.env.BASE_URL}/webhooks/twilio/status-callback/`,
+          statusCallback: `${process.env.API_URL}/webhooks/twilio/status-callback/`,
           statusCallbackMethod: 'POST',
         };
+        if (imageIsExisting) {
+          messageObject.mediaUrl = imageQuoteUrl; // make it this way pls
+        }
         const response = await sendInternationalSms(client, messageObject);
         message = await Message.create({
           user_id: user.id,
+          from: messageObject.from,
+          to: messageObject.to,
+          text_message: messageObject.body,
+          media_url: messageObject.mediaUrl || null,
           type: MESSAGES_TYPES.DAILY,
           twilio_sms_id: response.sid,
           status: response.status,

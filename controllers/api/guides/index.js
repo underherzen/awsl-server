@@ -140,10 +140,10 @@ const resetGuide = async (req, res, next) => {
   }
 
   const token = await ResetCurrentCourseToken.findOne({where: {token: body.token}});
-  console.log(token)
+  console.log(token);
 
   if (!token || moment() > moment(token.expiry) || token.attempts_left === 0) {
-    res.status(400).send({error: 'You can`t reset course now'})
+    res.status(400).send({error: 'You can`t reset course now'});
     return;
   }
 
