@@ -35,7 +35,7 @@ const sendFirstDailySms = async () => {
     },
     attributes: ['user_id'],
     group: ['user_id']
-  })).map(el => el.user_id); // this makes unique array only with user_ids like [1, 2, 3]
+  })).map(el => +el.user_id); // this makes unique array only with user_ids like [1, 2, 3]
   console.log(userIdsWithSentFirstSms);
   const usersToSend = await User.findAll({
     where: {
@@ -46,14 +46,14 @@ const sendFirstDailySms = async () => {
       start_immediately: true,
       can_receive_texts: true,
       guide_id: {
-        [Op.ne]: null
+        [Op.not]: null
       },
     }
   });
-  console.log(usersToSend);
+  // console.log(usersToSend);
   await Promise.all(usersToSend.map(async user => {
     const [userGuide, guideDay, guide] = await Promise.all([
-      userGuide.findOne({
+      UserGuide.findOne({
         where: {
           user_id: user.id,
           guide_id: user.guide_id
@@ -69,8 +69,8 @@ const sendFirstDailySms = async () => {
     ]);
 
     const diff = moment().diff(moment(userGuide.created_at), 'minutes');
-
-    if (diff !== 5) {
+    console.log(diff)
+    if (diff !== 1) {
       return;
     }
     const message = await sendDailyText(user, guideDay, 1, guide, userGuide);
