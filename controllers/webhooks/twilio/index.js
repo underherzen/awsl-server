@@ -1,5 +1,5 @@
 const {Message, User} = require('../../../models');
-const {REPLY_TEXTS, REPLY_COMMANDS} = require('../../../constants');
+const {REPLY_TEXTS, REPLY_COMMANDS, MESSAGES_TYPES} = require('../../../constants');
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const {parseUrlEncode, generateSmsAuthToken} = require('../../../modules/helpers');
 const {getTwilioNumber} = require('../../../modules/twilio');
@@ -52,6 +52,10 @@ const replyWebhook = async (req, res, next) => {
         message.media(`${process.env.BASE_URL}/docs/contact-card.vcf`);
       }
       messageBody = REPLY_TEXTS.YES.replace('{1}', facebookUrl);
+      await Message.create({
+        user_id: user.id,
+        type: MESSAGES_TYPES.REPLY_YES,
+      })
     } else if (sentCommand === REPLY_COMMANDS.STOP) {
       await User.update({
         can_receive_texts: false
@@ -59,6 +63,10 @@ const replyWebhook = async (req, res, next) => {
         where: {id: user.id}
       });
       messageBody = REPLY_TEXTS.STOP.replace('{0}', user.first_name);
+      await Message.create({
+        user_id: user.id,
+        type: MESSAGES_TYPES.REPLY_STOP,
+      })
     } else if (sentCommand === REPLY_COMMANDS.UNSTOP) {
       await User.update({
         can_receive_texts: true
@@ -72,8 +80,16 @@ const replyWebhook = async (req, res, next) => {
         user.id
       );
       messageBody = REPLY_TEXTS.UNSTOP.replace('{0}', shortUrl);
+      await Message.create({
+        user_id: user.id,
+        type: MESSAGES_TYPES.REPLY_UNSTOP,
+      })
     } else if (sentCommand === REPLY_COMMANDS.HELP) {
       messageBody = REPLY_TEXTS.HELP.replace('{0}', user.first_name);
+      await Message.create({
+        user_id: user.id,
+        type: MESSAGES_TYPES.REPLY_HELP,
+      })
     }
     message.body(messageBody);
     res.send(twiml.toString());

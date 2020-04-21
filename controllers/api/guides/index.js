@@ -1,7 +1,10 @@
 const { userToFront } = require("../../../modules/helpers");
+const {sendWelcomeMessage} = require('../../../modules/api/guides');
+const {getTwilioNumber, sendDailyText} = require('../../../modules/twilio');
 const moment = require("moment");
 const { Op } = require("sequelize");
 const { retrieveToken } = require("../../../modules/api/auth");
+const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const {
   UserGuide,
   User,
@@ -9,7 +12,9 @@ const {
   Guide,
   GuideDay,
   ResetCurrentCourseToken,
+  Message
 } = require("../../../models");
+const {MESSAGES_TYPES} = require('../../../constants');
 const _ = require("lodash");
 
 const loadGuides = async (req, res, next) => {
@@ -18,15 +23,8 @@ const loadGuides = async (req, res, next) => {
 };
 
 const selectGuide = async (req, res, next) => {
-  const { body, headers } = req;
+  const { body } = req;
   let { user } = req;
-
-  const token = await retrieveToken(headers);
-
-  if (!token) {
-    res.sendStatus(401);
-    return;
-  }
 
   if (user.guide_id) {
     res.status(400).send({ error: "You already have guide" });
@@ -52,12 +50,20 @@ const selectGuide = async (req, res, next) => {
     return;
   }
 
+
+  const existingWelcomeMessage = await Message.findOne({
+    where: {
+      user_id: user.id,
+      type: MESSAGES_TYPES.WELCOME
+    }
+  });
+
   const dayToAssign = user.is_active ? 1 : 0;
   const promises = [
     UserGuide.create({
       user_id: user.id,
       guide_id: guide.id,
-      day: dayToAssign,
+      day: 0,
     }),
     UserGuideDay.create({
       user_id: user.id,
@@ -72,14 +78,47 @@ const selectGuide = async (req, res, next) => {
       UserGuideDay.create({
         user_id: user.id,
         guide_id: guide.id,
-        day: 0,
+        day: 1,
       })
     );
   }
   // TODO: MAKE SENDING TEXTS
   await Promise.all(promises);
 
-  user = await userToFront(token.user_id);
+  // send welcome sms if it's first guide
+  if (!existingWelcomeMessage) {
+    await sendWelcomeMessage(user);
+  } else if (user.is_active && user.can_receive_texts) {
+    // send actual sms
+    const [guideDay, userGuide] = await Promise.all([
+      GuideDay.findOne({
+        where: {
+          guide_id: guide.id,
+          day: 1
+        }
+      }),
+      UserGuide.findOne({
+        where: {
+          user_id: user.id,
+          guide_id: guide.id
+        }
+      })
+    ]);
+    const message = await sendDailyText(user, guideDay, 1, guide, userGuide);
+    if (message) {
+      await UserGuideDay.update({
+        message_id: message.id
+      }, {
+        where: {
+          user_id: user.id,
+          guide_id: guide.id,
+          day: 1
+        }
+      })
+    }
+  }
+
+  user = await userToFront(user.id);
   const redirect = `/guides/${guide.url_safe_name}/intro/`;
 
   res.send({ user, redirect });

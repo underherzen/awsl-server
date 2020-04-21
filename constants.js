@@ -47,8 +47,11 @@ const TOKEN_TYPES = {
 
 const MESSAGES_TYPES = {
   DAILY: 'daily',
-  AFTER_REGISTRATION: 'after_registration',
-
+  WELCOME: 'WELCOME',
+  REPLY_YES: 'reply_yes',
+  REPLY_STOP: 'reply_STOP',
+  REPLY_UNSTOP: 'reply_unstop',
+  REPLY_HELP: 'reply_help',
 };
 
 const MESSAGES_STATUSES = {

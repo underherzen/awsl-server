@@ -1,4 +1,9 @@
 const {Message} = require('../../models');
+const urlShortener = require('../urlShortener');
+const shortener = new urlShortener();
+const {generateSmsAuthToken, imageExists} = require('../helpers');
+const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const {MESSAGES_TYPES} = require('../../constants');
 
 const personalizeTextMessage = (user, textMessage) => {
   user.firstName = user.first_name;
@@ -45,7 +50,7 @@ const getTwilioNumber = async (client, from) => {
   return isUSPhone ? process.env.PHONE : process.env.INTERNATIONAL_PHONE
 };
 
-sendUndeliveredMessage = async (message, client) =>  {
+sendUndeliveredMessage = async (message, client) => {
   try {
     const {from, to, message_text, media_url} = message;
     if (!from || !to || !message_text) {
@@ -77,10 +82,67 @@ sendUndeliveredMessage = async (message, client) =>  {
   }
 };
 
+const sendDailyText = async (user, guideDay, dayToAssign, guide, userGuide) => {
+  try {
+    if (dayToAssign === 0) {
+      throw 'You can`t send day 0 guides'
+    }
+
+    const trackingParams = encodeURIComponent(
+      `utm_source=daily texts&utm_medium=${guide.name} texts&utm_campaign=0 texts`
+    );
+    const messageText = personalizeTextMessage(user, guideDay.text_message);
+    const imageQuoteUrl = `${process.env.BASE_URL}/img/quotes/${guide.old_guide_id}/${dayToAssign}.png`;
+    const imageIsExisting = await imageExists(imageQuoteUrl);
+
+    const smsAuthToken = await generateSmsAuthToken(user.id);
+
+    const guideUrl = dayToAssign !== 22
+      ? `${process.env.BASE_URL}/guides/${guide.url_safe_name}/day-${dayToAssign}/`
+      : `${process.env.BASE_URL}/guides/`;
+    const messageUrl = await shortener.createShort(
+      `${process.env.BASE_URL}?redirect_url=${guideUrl}&uts=${smsAuthToken}&ui=${user.id}&${trackingParams}`,
+      user.id
+    );
+    try {
+      const messageObject = {
+        from: await getTwilioNumber(client, user.phone),
+        body: `${messageText}\n${messageUrl}`,
+        to: user.phone,
+        statusCallback: `${process.env.API_URL}/webhooks/twilio/status-callback/`,
+        statusCallbackMethod: 'POST',
+      };
+      if (imageIsExisting) {
+        messageObject.mediaUrl = imageQuoteUrl; // make it this way pls
+      }
+      const response = await sendInternationalSms(client, messageObject);
+      const message = await Message.create({
+        user_id: user.id,
+        from: messageObject.from,
+        to: messageObject.to,
+        text_message: messageObject.body,
+        media_url: messageObject.mediaUrl || null,
+        type: MESSAGES_TYPES.DAILY,
+        twilio_sms_id: response.sid,
+        status: response.status,
+        guide_id: userGuide.guide_id,
+        day: dayToAssign
+      });
+      return message
+    } catch (e) {
+      return null
+    }
+  } catch (e) {
+    console.log(e);
+    return null
+  }
+};
+
 module.exports = {
   personalizeTextMessage,
   getTimezones,
   sendInternationalSms,
   getTwilioNumber,
-  sendUndeliveredMessage
+  sendUndeliveredMessage,
+  sendDailyText
 };
