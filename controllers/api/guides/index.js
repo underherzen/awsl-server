@@ -65,12 +65,12 @@ const selectGuide = async (req, res, next) => {
     UserGuide.create({
       user_id: user.id,
       guide_id: guide.id,
-      day: 0,
+      day: dayToAssign,
     }),
     UserGuideDay.create({
       user_id: user.id,
       guide_id: guide.id,
-      day: dayToAssign,
+      day: 0,
     }),
     User.update({ guide_id: guide.id }, { where: { id: user.id } }),
   ];

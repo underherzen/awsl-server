@@ -1,13 +1,10 @@
 const moment = require('moment');
-const {ShortUrl} = require('../../models');
-
+const { ShortUrl } = require('../../models');
 
 class urlShortener {
-  constructor () {
+  constructor() {}
 
-  }
-
-  genRandomString (length) {
+  genRandomString(length) {
     let shortStr = '';
     for (let i = 0; i < length; i++) {
       let code = Math.floor(Math.random() * 62);
@@ -18,23 +15,26 @@ class urlShortener {
       } else {
         code = code + 61;
       }
-      shortStr = shortStr + String.fromCharCode(code)
+      shortStr = shortStr + String.fromCharCode(code);
     }
-    return shortStr
+    return shortStr;
   }
 
-  async createShort (full, userId) {
+  async createShort(full, userId) {
     let shortStr;
     shortStr = this.genRandomString(7);
     const base = process.env.BASE_URL ? process.env.BASE_URL : 'goliveitup.com';
-    const host = base.indexOf('dev') > -1
-      ? 'dev.goliveitup.com'
-      : base.indexOf('goliveitup') > -1
+    const host =
+      base.indexOf('dev') > -1
+        ? 'dev.goliveitup.com'
+        : base.indexOf('goliveitup') > -1
         ? 'goliveitup.com'
         : base;
     let doNext = true;
     while (doNext) {
-      const existingShortUrl = await ShortUrl.findOne({where: {short_url: shortStr}});
+      const existingShortUrl = await ShortUrl.findOne({
+        where: { short_url: shortStr },
+      });
       if (!existingShortUrl) {
         doNext = false;
       } else {
@@ -49,8 +49,8 @@ class urlShortener {
     return host + '/?z=' + shortStr;
   }
 
-  async getFull (short) {
-    const entity = await ShortUrl.findOne({where: {short_url: short}});
+  async getFull(short) {
+    const entity = await ShortUrl.findOne({ where: { short_url: short } });
     return entity.full_url;
   }
 }

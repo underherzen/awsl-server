@@ -2,12 +2,12 @@ const bcrypt = require('bcryptjs');
 const moment = require('moment');
 const _ = require('lodash');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
-const {User, Session, ResetCurrentCourseToken} = require('../../../models');
+const { User, Session, ResetCurrentCourseToken } = require('../../../models');
 const libphonenumber = require('libphonenumber-js');
 const axios = require('axios');
-const {generateRandString} = require('../../helpers');
+const { generateRandString } = require('../../helpers');
 
-const generateToken = async ({id}) => {
+const generateToken = async ({ id }) => {
   const expiry = moment().add(1, 'd').format('YYYY-MM-DD HH:mm:ss');
   let doNext = true;
   while (doNext) {
@@ -18,84 +18,86 @@ const generateToken = async ({id}) => {
         id: token,
         user_id: id,
         token,
-        expiry
+        expiry,
       });
       doNext = false;
-      return token
+      return token;
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
   }
 };
 
-const retrieveToken = async headers => {
+const retrieveToken = async (headers) => {
   let token = headers.authorization;
   if (!token.startsWith('Bearer ')) {
-    return null
+    return null;
   }
   token = token.split(' ').pop();
   const record = await Session.findByPk(token);
   if (!record) {
-    return null
+    return null;
   }
   return record;
 };
 
 const updateToken = async (token = {}) => {
-  const newExpiry = moment(token.expiry).add(10, 'm').format('YYYY-MM-DD HH:mm:ss');
-  await Session.update({expiry: newExpiry}, {where: {id: token.id}});
-  return true
+  const newExpiry = moment(token.expiry)
+    .add(10, 'm')
+    .format('YYYY-MM-DD HH:mm:ss');
+  await Session.update({ expiry: newExpiry }, { where: { id: token.id } });
+  return true;
 };
 
-const retrieveCoupon = async coupon => {
+const retrieveCoupon = async (coupon) => {
   try {
     coupon = coupon.trim().toUpperCase();
     coupon = await stripe.coupons.retrieve(coupon);
-    return coupon
+    return coupon;
   } catch (e) {
-    return null
+    return null;
   }
 };
 
 const toValidPhone = (phone, countryCode = 'US') => {
   let userPhone = libphonenumber.parsePhoneNumberFromString(phone);
   if (userPhone && userPhone.isValid()) {
-    return userPhone.number
+    return userPhone.number;
   }
   userPhone = libphonenumber.parsePhoneNumberFromString(phone, countryCode);
   if (userPhone && userPhone.isValid()) {
-    return userPhone.number
+    return userPhone.number;
   }
-  return null
+  return null;
 };
 
-const googleCheckToken = async token => {
+const googleCheckToken = async (token) => {
   try {
     const url = `https://www.googleapis.com/oauth2/v2/tokeninfo?id_token=${token}`;
     const response = await axios.get(url, {
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      }
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
     });
     if (!response.data) {
-      return null
+      return null;
     }
-    return response
+    return response;
   } catch (e) {
-    return null
+    return null;
   }
 };
 
-const fbCheckToken = async token => {
+const fbCheckToken = async (token) => {
   try {
     const url = `https://graph.facebook.com/debug_token?input_token=${token}&access_token=${process.env.FB_SECRET}`;
     const response = await axios.get(url);
     if (!response.data || !response.data.is_valid || !response.data.user_id) {
-      return null
+      return null;
     }
-    return response
+    return response;
   } catch (e) {
-    return null
+    return null;
   }
 };
 
@@ -109,16 +111,17 @@ const generateResetToken = async (userId) => {
   let count = 0;
   while (doNext && count < 10) {
     const token = generateRandString();
-    const existingToken = await ResetCurrentCourseToken.findOne({where: {token}});
+    const existingToken = await ResetCurrentCourseToken.findOne({
+      where: { token },
+    });
     if (!existingToken) {
       doNext = false;
-      return token
+      return token;
     }
     count += 1;
   }
-  return null
+  return null;
 };
-
 
 module.exports = {
   generateToken,
@@ -128,5 +131,5 @@ module.exports = {
   toValidPhone,
   googleCheckToken,
   fbCheckToken,
-  generateResetToken
+  generateResetToken,
 };

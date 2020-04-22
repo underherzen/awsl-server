@@ -6,7 +6,7 @@ const STRIPE_CONSTANTS = {
     new_annual: 'New_Annual',
   },
   name: 'LIU Annual Subscription',
-  trialDays: 21
+  trialDays: 21,
 };
 
 const STRIPE_STATUSES = {
@@ -17,7 +17,7 @@ const STRIPE_STATUSES = {
   PAUSED: 'paused',
   UNPAID: 'unpaid',
   CANCELED: 'canceled',
-  INCOMPLETE_EXPIRED: 'incomplete_expired'
+  INCOMPLETE_EXPIRED: 'incomplete_expired',
 };
 
 const ACTIVE_STATUSES = [
@@ -26,30 +26,27 @@ const ACTIVE_STATUSES = [
   STRIPE_STATUSES.TRIALING,
   STRIPE_STATUSES.INCOMPLETE,
   STRIPE_STATUSES.PAUSED,
-  STRIPE_STATUSES.INCOMPLETE_EXPIRED
+  STRIPE_STATUSES.INCOMPLETE_EXPIRED,
 ];
 
-const INACTIVE_STATUSES = [
-  STRIPE_STATUSES.UNPAID,
-  STRIPE_STATUSES.CANCELED,
-];
+const INACTIVE_STATUSES = [STRIPE_STATUSES.UNPAID, STRIPE_STATUSES.CANCELED];
 
 const USER_TYPES = {
   ADMIN: 'admin',
   USER: 'user',
-  MODERATOR: 'moderator'
+  MODERATOR: 'moderator',
 };
 
 const TOKEN_TYPES = {
   RESET_PASSWORD: 'reset_password',
-  SMS_AUTH: 'sms_auth' // these tokens work forever FOR NOW
+  SMS_AUTH: 'sms_auth', // these tokens work forever FOR NOW
 };
 
 const MESSAGES_TYPES = {
   DAILY: 'daily',
-  WELCOME: 'WELCOME',
+  WELCOME: 'welcome',
   REPLY_YES: 'reply_yes',
-  REPLY_STOP: 'reply_STOP',
+  REPLY_STOP: 'reply_stop',
   REPLY_UNSTOP: 'reply_unstop',
   REPLY_HELP: 'reply_help',
 };
@@ -64,12 +61,12 @@ const MESSAGES_STATUSES = {
   UNDELIVERED: 'undelivered',
   RECEIVING: 'receiving',
   RECEIVED: 'received',
-  READ: 'read'
+  READ: 'read',
 };
 
 const FAILED_MESSAGES_STATUSES = [
   MESSAGES_STATUSES.FAILED,
-  MESSAGES_STATUSES.UNDELIVERED
+  MESSAGES_STATUSES.UNDELIVERED,
 ];
 
 const CRON_INTERVALS = {
@@ -130,5 +127,5 @@ module.exports = {
   MESSAGES_STATUSES,
   FAILED_MESSAGES_STATUSES,
   REPLY_TEXTS,
-  REPLY_COMMANDS
+  REPLY_COMMANDS,
 };
