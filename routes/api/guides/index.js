@@ -21,4 +21,6 @@ router.post("/reset-guide", guideController.resetGuide);
 
 router.post("/accept-guide-day", guideController.acceptGuideDay);
 
+router.post("/visit-guide-day", guideController.visitGuideDay);
+
 module.exports = router;

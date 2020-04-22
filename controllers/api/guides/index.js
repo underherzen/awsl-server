@@ -1,10 +1,13 @@
 const { userToFront } = require("../../../modules/helpers");
-const {sendWelcomeMessage} = require('../../../modules/api/guides');
-const {getTwilioNumber, sendDailyText} = require('../../../modules/twilio');
+const { sendWelcomeMessage } = require("../../../modules/api/guides");
+const { getTwilioNumber, sendDailyText } = require("../../../modules/twilio");
 const moment = require("moment");
 const { Op } = require("sequelize");
 const { retrieveToken } = require("../../../modules/api/auth");
-const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const client = require("twilio")(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
 const {
   UserGuide,
   User,
@@ -12,9 +15,9 @@ const {
   Guide,
   GuideDay,
   ResetCurrentCourseToken,
-  Message
+  Message,
 } = require("../../../models");
-const {MESSAGES_TYPES} = require('../../../constants');
+const { MESSAGES_TYPES } = require("../../../constants");
 const _ = require("lodash");
 
 const loadGuides = async (req, res, next) => {
@@ -50,12 +53,11 @@ const selectGuide = async (req, res, next) => {
     return;
   }
 
-
   const existingWelcomeMessage = await Message.findOne({
     where: {
       user_id: user.id,
-      type: MESSAGES_TYPES.WELCOME
-    }
+      type: MESSAGES_TYPES.WELCOME,
+    },
   });
 
   const dayToAssign = user.is_active ? 1 : 0;
@@ -94,27 +96,30 @@ const selectGuide = async (req, res, next) => {
       GuideDay.findOne({
         where: {
           guide_id: guide.id,
-          day: 1
-        }
+          day: 1,
+        },
       }),
       UserGuide.findOne({
         where: {
           user_id: user.id,
-          guide_id: guide.id
-        }
-      })
+          guide_id: guide.id,
+        },
+      }),
     ]);
     const message = await sendDailyText(user, guideDay, 1, guide, userGuide);
     if (message) {
-      await UserGuideDay.update({
-        message_id: message.id
-      }, {
-        where: {
-          user_id: user.id,
-          guide_id: guide.id,
-          day: 1
+      await UserGuideDay.update(
+        {
+          message_id: message.id,
+        },
+        {
+          where: {
+            user_id: user.id,
+            guide_id: guide.id,
+            day: 1,
+          },
         }
-      })
+      );
     }
   }
 
@@ -167,7 +172,36 @@ const acceptGuideDay = async (req, res, next) => {
   }
 
   user = await userToFront(user.id);
-  res.status(200).send({ user });
+  res.send({ user });
+};
+
+const visitGuideDay = async (req, res, next) => {
+  const { day_to_visit, guide_id } = req.body;
+  let { user } = req;
+
+  if (_.isUndefined(day_to_visit) || _.isUndefined(guide_id)) {
+    res.status(400).send({ error: "Bad request!" });
+    return;
+  }
+
+  const visitedGuideDay = await UserGuideDay.update(
+    { visited: true },
+    {
+      where: {
+        user_id: user.id,
+        guide_id: Number(guide_id),
+        day: Number(day_to_visit),
+      },
+    }
+  );
+
+  if (!visitedGuideDay) {
+    res.sendStatus(404);
+    return;
+  }
+
+  user = await userToFront(user.id);
+  res.send({ user });
 };
 
 const getGuideDaysForSlider = async (req, res, next) => {
@@ -262,4 +296,5 @@ module.exports = {
   loadGuides,
   resetGuide,
   acceptGuideDay,
+  visitGuideDay,
 };
