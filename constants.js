@@ -47,9 +47,9 @@ const TOKEN_TYPES = {
 
 const MESSAGES_TYPES = {
   DAILY: 'daily',
-  WELCOME: 'WELCOME',
+  WELCOME: 'welcome',
   REPLY_YES: 'reply_yes',
-  REPLY_STOP: 'reply_STOP',
+  REPLY_STOP: 'reply_stop',
   REPLY_UNSTOP: 'reply_unstop',
   REPLY_HELP: 'reply_help',
 };

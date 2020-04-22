@@ -23,7 +23,7 @@ const sendUndeliveredDailyMessages = async () => {
   dailyUndeliveredMessages = dailyUndeliveredMessages
     .filter(message => {
       const diff = moment().diff(moment(message.updated_at), 'h');
-      return diff === 1
+      return diff >= 1
     });
   await Promise.all(dailyUndeliveredMessages.map(message => sendUndeliveredMessage(message, client)))
 };
@@ -218,5 +218,6 @@ const dailyText = async () => {
 
 module.exports = {
   dailyText,
-  sendFirstDailySms
+  sendFirstDailySms,
+  sendUndeliveredDailyMessages
 };

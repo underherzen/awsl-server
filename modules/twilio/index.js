@@ -52,13 +52,13 @@ const getTwilioNumber = async (client, from) => {
 
 sendUndeliveredMessage = async (message, client) => {
   try {
-    const {from, to, message_text, media_url} = message;
-    if (!from || !to || !message_text) {
+    const {from, to, text_message, media_url} = message;
+    if (!from || !to || !text_message) {
       return;
     }
     const messageObject = {
       from,
-      body: message_text,
+      body: text_message,
       to,
       statusCallback: `${process.env.API_URL}/webhooks/twilio/status-callback/`,
       statusCallbackMethod: 'POST'

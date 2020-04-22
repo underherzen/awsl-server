@@ -3,8 +3,12 @@ const moment = require('moment');
 const {Op} = require('sequelize');
 
 
-const checkUsersSubscriptions = () => {
+const checkUsersSubscriptions = async () => {
+  const users = await User.findAll({
+    where: {
 
+    }
+  })
 };
 
 const checkUserStartDay = async () => {

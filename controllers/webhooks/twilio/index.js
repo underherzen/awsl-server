@@ -11,6 +11,7 @@ const twilioStatusCallback = async (req, res, next) => {
   const body = req.body;
   const twilioSmsSid = body.SmsSid;
   const status = body.SmsStatus;
+  console.log(status);
 
   const message = await Message.findOne({where: {twilio_sms_id: twilioSmsSid}});
   if (!message) {

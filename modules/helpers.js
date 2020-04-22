@@ -1,6 +1,7 @@
 const {Session, User, UserGuide, UserGuideDay, Subscription, ResetCurrentCourseToken, Token} = require('../models');
 const {TOKEN_TYPES} = require('../constants');
 const axios = require('axios');
+const _ = require('lodash');
 
 const retrieveToken = async headers => {
   let token = headers.authorization;
@@ -15,6 +16,27 @@ const retrieveToken = async headers => {
   return record;
 };
 
+const guidesToObjForFront = (userGuides, userGuideDays) => {
+  const userGuideCopy = _.cloneDeep(userGuides);
+  const guideObj = {};
+  for (let guide of userGuideCopy) {
+    guideObj[+guide.guide_id] = guide.dataValues;
+    guideObj[+guide.guide_id].accepted_days = [];
+    guideObj[+guide.guide_id].visited_days = [];
+  }
+
+  for (let day of userGuideDays) {
+    if (day.accepted) {
+      guideObj[+day.guide_id].accepted_days.push(day.day)
+    }
+    if (day.visited) {
+      guideObj[+day.guide_id].visited_days.push(day.day)
+    }
+
+  }
+  return guideObj;
+};
+
 const userToFront = async id => {
   let user, userGuides, userGuideDays, subscription, resetCurrentCourseToken;
   [user, userGuides, userGuideDays, subscription, resetCurrentCourseToken] = await Promise.all([
@@ -26,6 +48,9 @@ const userToFront = async id => {
     Subscription.findOne({where: {user_id: id}}),
     ResetCurrentCourseToken.findOne({where: {user_id: id}})
   ]);
+  // console.log(userGuides)
+  // console.log(userGuideDays);
+  user.guides = guidesToObjForFront(userGuides, userGuideDays);
   user.all_guides = userGuides;
   user.all_guide_days = userGuideDays;
   user.subscription_status = subscription.status;

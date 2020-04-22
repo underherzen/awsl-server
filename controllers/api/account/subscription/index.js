@@ -32,24 +32,14 @@ const pauseSubscription = async (req, res, next) => {
 const resetSubscription = async (req, res, next) => {
   let user = req.user;
   const subscription = req.subscription;
+  console.log(subscription)
 
-  // if it's only on pause
-  if (
-    [STRIPE_STATUSES.PAUSED, STRIPE_STATUSES.ACTIVE, STRIPE_STATUSES.TRIALING].includes(subscription.status)
-    && subscription.cancel_at_period_end === true
-  ) {
-    await Promise.all([
-      stripe.subscriptions.update(subscription.id, {
-        cancel_at_period_end: false
-      }),
-      Subscription.update({cancel_at_period_end: false}, {where: {id: subscription.id}})
-    ]);
-    user = await userToFront(user.id);
-    res.send({user});
-  }
   // if canceled
   if (subscription.status === STRIPE_STATUSES.CANCELED) {
-
+    if (!subscription.last4) {
+      res.status(400).send({error: 'You should add CC details!'})
+      return;
+    }
     const product = {
       id: STRIPE_CONSTANTS.plans.annual_99, // NOTE: This is the ID for the plan, NOT the product, in stripe's API thingamajig (https://dashboard.stripe.com/plans/annual)
       name: STRIPE_CONSTANTS.name,
@@ -81,9 +71,20 @@ const resetSubscription = async (req, res, next) => {
     );
     user = await userToFront(user.id);
     res.send({user});
-  }
-
-  if (subscription.status === STRIPE_STATUSES.PAST_DUE) {
+    return;
+  } else if (  // if it's only on pause
+    [STRIPE_STATUSES.PAUSED, STRIPE_STATUSES.ACTIVE, STRIPE_STATUSES.TRIALING].includes(subscription.status)
+    && subscription.cancel_at_period_end === true
+  ) {
+    await Promise.all([
+      stripe.subscriptions.update(subscription.id, {
+        cancel_at_period_end: false
+      }),
+      Subscription.update({cancel_at_period_end: false}, {where: {id: subscription.id}})
+    ]);
+    user = await userToFront(user.id);
+    res.send({user});
+  } else if (subscription.status === STRIPE_STATUSES.PAST_DUE) {
     if (!subscription.last4) {
       res.status(400).send({error: 'You should add CC details'});
       return;
@@ -94,7 +95,9 @@ const resetSubscription = async (req, res, next) => {
     await Subscription.update({cancel_at_period_end: false}, {where: {id: subscription.id}});
     user = await userToFront(user.id);
     res.send({user});
+    return
   }
+  console.log('HERE')
   res.status(400).send({error: 'Something went wrong'})
 };
 
@@ -122,7 +125,6 @@ const changePaymentMethod = async (req, res, next) => {
   }
   user = await userToFront(user.id);
   res.send({user})
-
 };
 
 module.exports = {

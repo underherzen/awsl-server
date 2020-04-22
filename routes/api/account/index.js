@@ -7,7 +7,7 @@ const {userIsAuth, userHasSubscription} = require('../../../controllers');
 
 router.use('/password', passwordRoutes);
 
-router.use('/subscription', userIsAuth, subscriptionRoutes);
+router.use('/subscription', userIsAuth, userHasSubscription, subscriptionRoutes);
 
 router.use('/bio', userIsAuth, userHasSubscription, bioRoutes);
 
