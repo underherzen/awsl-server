@@ -33,7 +33,7 @@ const getTimezones = (sendTime) => {
   const offsetMinutes = date.getUTCMinutes();
   const timezones = [offsetHours, tz]
     .filter((el) => Math.abs(el) <= 12)
-    .map((el) => (el < 0 ? 60 * el + offsetMinutes : 60 * el - offsetMinutes));
+    .map((el) => (el < 0 ? 60 * el - offsetMinutes : 60 * el + offsetMinutes));
   return timezones;
 };
 
@@ -146,6 +146,7 @@ const sendDailyText = async (user, guideDay, dayToAssign, guide, userGuide) => {
       });
       return message;
     } catch (e) {
+      console.log(e)
       return null;
     }
   } catch (e) {
