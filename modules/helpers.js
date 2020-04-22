@@ -1,17 +1,25 @@
-const {Session, User, UserGuide, UserGuideDay, Subscription, ResetCurrentCourseToken, Token} = require('../models');
-const {TOKEN_TYPES} = require('../constants');
+const {
+  Session,
+  User,
+  UserGuide,
+  UserGuideDay,
+  Subscription,
+  ResetCurrentCourseToken,
+  Token,
+} = require('../models');
+const { TOKEN_TYPES } = require('../constants');
 const axios = require('axios');
 const _ = require('lodash');
 
-const retrieveToken = async headers => {
+const retrieveToken = async (headers) => {
   let token = headers.authorization;
   if (!token || !token.startsWith('Bearer ')) {
-    return null
+    return null;
   }
   token = token.split(' ').pop();
   const record = await Session.findByPk(token);
   if (!record) {
-    return null
+    return null;
   }
   return record;
 };
@@ -27,26 +35,29 @@ const guidesToObjForFront = (userGuides, userGuideDays) => {
 
   for (let day of userGuideDays) {
     if (day.accepted) {
-      guideObj[+day.guide_id].accepted_days.push(day.day)
+      guideObj[+day.guide_id].accepted_days.push(day.day);
     }
     if (day.visited) {
-      guideObj[+day.guide_id].visited_days.push(day.day)
+      guideObj[+day.guide_id].visited_days.push(day.day);
     }
-
   }
   return guideObj;
 };
 
-const userToFront = async id => {
+const userToFront = async (id) => {
   let user, userGuides, userGuideDays, subscription, resetCurrentCourseToken;
-  [user, userGuides, userGuideDays, subscription, resetCurrentCourseToken] = await Promise.all([
-    User.findByPk(id, {raw: true}),
-    UserGuide.findAll(
-      {where: {user_id: id}}
-    ),
-    UserGuideDay.findAll({where: {user_id: id}}),
-    Subscription.findOne({where: {user_id: id}}),
-    ResetCurrentCourseToken.findOne({where: {user_id: id}})
+  [
+    user,
+    userGuides,
+    userGuideDays,
+    subscription,
+    resetCurrentCourseToken,
+  ] = await Promise.all([
+    User.findByPk(id, { raw: true }),
+    UserGuide.findAll({ where: { user_id: id } }),
+    UserGuideDay.findAll({ where: { user_id: id } }),
+    Subscription.findOne({ where: { user_id: id } }),
+    ResetCurrentCourseToken.findOne({ where: { user_id: id } }),
   ]);
   // console.log(userGuides)
   // console.log(userGuideDays);
@@ -59,13 +70,15 @@ const userToFront = async id => {
   user.cancel_at_period_end = subscription.cancel_at_period_end;
   user.reset_current_course_token = resetCurrentCourseToken.token;
   user.reset_current_course_attempts = resetCurrentCourseToken.attempts_left;
-  return user
+  return user;
 };
 
 const generateRandString = () => {
-  return Math.random().toString(36).substring(2, 25) +
+  return (
+    Math.random().toString(36).substring(2, 25) +
     Math.random().toString(36).substring(2, 15) +
-    Math.random().toString(36).substring(2, 15);
+    Math.random().toString(36).substring(2, 15)
+  );
 };
 
 const imageExists = async (url) => {
@@ -78,7 +91,7 @@ const imageExists = async (url) => {
   }
 };
 
-const generateSmsAuthToken = async userId => {
+const generateSmsAuthToken = async (userId) => {
   try {
     let token = generateRandString();
     let doNext = true;
@@ -88,25 +101,25 @@ const generateSmsAuthToken = async userId => {
         where: {
           token,
           type: TOKEN_TYPES.SMS_AUTH,
-          user_id: userId
-        }
+          user_id: userId,
+        },
       });
       if (!existingToken) {
         await Token.create({
           user_id: userId,
           token,
-          type: TOKEN_TYPES.SMS_AUTH
+          type: TOKEN_TYPES.SMS_AUTH,
         });
         doNext = false;
-        return token
+        return token;
       }
       token = generateRandString();
       count += 1;
     }
-    return null
+    return null;
   } catch (e) {
     console.log(e);
-    return null
+    return null;
   }
 };
 
@@ -126,5 +139,5 @@ module.exports = {
   generateRandString,
   imageExists,
   generateSmsAuthToken,
-  parseUrlEncode
+  parseUrlEncode,
 };

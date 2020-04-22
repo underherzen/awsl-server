@@ -1,21 +1,30 @@
-const {Message} = require('../../models');
+const { Message } = require('../../models');
 const urlShortener = require('../urlShortener');
 const shortener = new urlShortener();
-const {generateSmsAuthToken, imageExists} = require('../helpers');
-const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-const {MESSAGES_TYPES} = require('../../constants');
+const { generateSmsAuthToken, imageExists } = require('../helpers');
+const client = require('twilio')(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
+const { MESSAGES_TYPES } = require('../../constants');
 
 const personalizeTextMessage = (user, textMessage) => {
   user.firstName = user.first_name;
   return Object.keys(user).reduce((string, propertyName) => {
     // This normalizes the property names and makes the regex a lot more relaxed.
     // For example, with this, all of the following work: @[firstname], @[first Name], @[FiRsT   nAmE], etc
-    const textPropertyName = propertyName.replace(/([a-z])([A-Z])/g, '$1\\s*$2');
-    return string.replace(new RegExp(`@\\[${textPropertyName}]`, 'ig'), user[propertyName]);
-  }, textMessage)
+    const textPropertyName = propertyName.replace(
+      /([a-z])([A-Z])/g,
+      '$1\\s*$2'
+    );
+    return string.replace(
+      new RegExp(`@\\[${textPropertyName}]`, 'ig'),
+      user[propertyName]
+    );
+  }, textMessage);
 };
 
-const getTimezones = sendTime => {
+const getTimezones = (sendTime) => {
   const date = new Date();
 
   const offsetHours = date.getUTCHours() - sendTime;
@@ -23,9 +32,9 @@ const getTimezones = sendTime => {
 
   const offsetMinutes = date.getUTCMinutes();
   const timezones = [offsetHours, tz]
-    .filter(el => Math.abs(el) <= 12)
-    .map(el => el < 0 ? 60 * el + offsetMinutes : 60 * el - offsetMinutes);
-  return timezones
+    .filter((el) => Math.abs(el) <= 12)
+    .map((el) => (el < 0 ? 60 * el + offsetMinutes : 60 * el - offsetMinutes));
+  return timezones;
 };
 
 const sendInternationalSms = async (client, messageObject) => {
@@ -38,7 +47,7 @@ const sendInternationalSms = async (client, messageObject) => {
       messageObject.from = process.env.INTERNATIONAL_PHONE;
       res = await client.messages.create(messageObject);
     } else {
-      throw e
+      throw e;
     }
   }
   return res;
@@ -46,13 +55,13 @@ const sendInternationalSms = async (client, messageObject) => {
 
 const getTwilioNumber = async (client, from) => {
   const phoneData = await client.lookups.phoneNumbers(from).fetch();
-  const isUSPhone = phoneData.countryCode === "US";
-  return isUSPhone ? process.env.PHONE : process.env.INTERNATIONAL_PHONE
+  const isUSPhone = phoneData.countryCode === 'US';
+  return isUSPhone ? process.env.PHONE : process.env.INTERNATIONAL_PHONE;
 };
 
 sendUndeliveredMessage = async (message, client) => {
   try {
-    const {from, to, text_message, media_url} = message;
+    const { from, to, text_message, media_url } = message;
     if (!from || !to || !text_message) {
       return;
     }
@@ -61,31 +70,37 @@ sendUndeliveredMessage = async (message, client) => {
       body: text_message,
       to,
       statusCallback: `${process.env.API_URL}/webhooks/twilio/status-callback/`,
-      statusCallbackMethod: 'POST'
+      statusCallbackMethod: 'POST',
     };
     if (media_url) {
       messageObject.mediaUrl = media_url;
     }
     const response = await sendInternationalSms(client, messageObject);
-    await Message.update({
-      twilio_sms_id: response.sid,
-      attempts_left: message.attempts_left - 1
-    }, {
-      where: {id: message.id}
-    })
+    await Message.update(
+      {
+        twilio_sms_id: response.sid,
+        attempts_left: message.attempts_left - 1,
+      },
+      {
+        where: { id: message.id },
+      }
+    );
   } catch (e) {
-    await Message.update({
-      attempts_left: message.attempts_left - 1
-    }, {
-      where: {id: message.id}
-    })
+    await Message.update(
+      {
+        attempts_left: message.attempts_left - 1,
+      },
+      {
+        where: { id: message.id },
+      }
+    );
   }
 };
 
 const sendDailyText = async (user, guideDay, dayToAssign, guide, userGuide) => {
   try {
     if (dayToAssign === 0) {
-      throw 'You can`t send day 0 guides'
+      throw 'You can`t send day 0 guides';
     }
 
     const trackingParams = encodeURIComponent(
@@ -97,9 +112,10 @@ const sendDailyText = async (user, guideDay, dayToAssign, guide, userGuide) => {
 
     const smsAuthToken = await generateSmsAuthToken(user.id);
 
-    const guideUrl = dayToAssign !== 22
-      ? `${process.env.BASE_URL}/guides/${guide.url_safe_name}/day-${dayToAssign}/`
-      : `${process.env.BASE_URL}/guides/`;
+    const guideUrl =
+      dayToAssign !== 22
+        ? `${process.env.BASE_URL}/guides/${guide.url_safe_name}/day-${dayToAssign}/`
+        : `${process.env.BASE_URL}/guides/`;
     const messageUrl = await shortener.createShort(
       `${process.env.BASE_URL}?redirect_url=${guideUrl}&uts=${smsAuthToken}&ui=${user.id}&${trackingParams}`,
       user.id
@@ -126,15 +142,15 @@ const sendDailyText = async (user, guideDay, dayToAssign, guide, userGuide) => {
         twilio_sms_id: response.sid,
         status: response.status,
         guide_id: userGuide.guide_id,
-        day: dayToAssign
+        day: dayToAssign,
       });
-      return message
+      return message;
     } catch (e) {
-      return null
+      return null;
     }
   } catch (e) {
     console.log(e);
-    return null
+    return null;
   }
 };
 
@@ -144,5 +160,5 @@ module.exports = {
   sendInternationalSms,
   getTwilioNumber,
   sendUndeliveredMessage,
-  sendDailyText
+  sendDailyText,
 };

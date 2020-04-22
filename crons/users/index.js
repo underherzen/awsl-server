@@ -1,14 +1,11 @@
-const {User, Subscription} = require('../../models');
+const { User, Subscription } = require('../../models');
 const moment = require('moment');
-const {Op} = require('sequelize');
-
+const { Op } = require('sequelize');
 
 const checkUsersSubscriptions = async () => {
   const users = await User.findAll({
-    where: {
-
-    }
-  })
+    where: {},
+  });
 };
 
 const checkUserStartDay = async () => {
@@ -17,19 +14,24 @@ const checkUserStartDay = async () => {
       start_immediately: false,
       is_active: false,
       start_day: {
-        [Op.lte]: moment().toDate()
-      }
-    }
+        [Op.lte]: moment().toDate(),
+      },
+    },
   });
-  await Promise.all(users.map(user =>
-    User.update({
-      is_active: true
-    }, {
-      where: {id: user.id}
-    })
-  ));
+  await Promise.all(
+    users.map((user) =>
+      User.update(
+        {
+          is_active: true,
+        },
+        {
+          where: { id: user.id },
+        }
+      )
+    )
+  );
 };
 
 module.exports = {
-  checkUserStartDay
+  checkUserStartDay,
 };

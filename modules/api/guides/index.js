@@ -1,7 +1,10 @@
-const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-const {getTwilioNumber, sendInternationalSms} = require('../../twilio');
-const {User, Message} = require('../../../models');
-const {MESSAGES_TYPES} = require('../../../constants');
+const client = require('twilio')(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
+const { getTwilioNumber, sendInternationalSms } = require('../../twilio');
+const { User, Message } = require('../../../models');
+const { MESSAGES_TYPES } = require('../../../constants');
 
 const sendWelcomeMessage = async (user) => {
   try {
@@ -23,10 +26,10 @@ const sendWelcomeMessage = async (user) => {
       status: response.status,
     });
   } catch (e) {
-    console.log(e)
+    console.log(e);
   }
 };
 
 module.exports = {
-  sendWelcomeMessage
+  sendWelcomeMessage,
 };

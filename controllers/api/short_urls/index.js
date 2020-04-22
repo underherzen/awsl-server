@@ -1,4 +1,4 @@
-const {ShortUrl} = require('../../../models');
+const { ShortUrl } = require('../../../models');
 const urlShortener = require('../../../modules/urlShortener');
 const shortener = new urlShortener();
 
@@ -8,11 +8,11 @@ const getFullUrl = async (req, res, next) => {
   const fullUrl = await shortener.getFull(body.short_url);
   if (!fullUrl) {
     res.sendStatus(404);
-    return
+    return;
   }
-  res.send({full_url: fullUrl})
+  res.send({ full_url: fullUrl });
 };
 
 module.exports = {
-  getFullUrl
+  getFullUrl,
 };

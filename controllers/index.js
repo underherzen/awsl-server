@@ -1,6 +1,6 @@
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
-const {User, Subscription} = require('../models');
-const {retrieveToken} = require('../modules/helpers');
+const { User, Subscription } = require('../models');
+const { retrieveToken } = require('../modules/helpers');
 const moment = require('moment');
 
 const isUserActive = (req, res, next) => {
@@ -29,12 +29,14 @@ const userIsAuth = async (req, res, next) => {
     return;
   }
   req.user = user.dataValues;
-  next()
+  next();
 };
 
 const userHasSubscription = async (req, res, next) => {
   let user = req.user;
-  const subscription = await Subscription.findOne({where: {user_id: user.id}});
+  const subscription = await Subscription.findOne({
+    where: { user_id: user.id },
+  });
 
   if (!subscription) {
     res.sendStatus(400);
@@ -55,27 +57,31 @@ const userHasSubscription = async (req, res, next) => {
 const retrieveAndUpdateUserSubscription = async (req, res, next) => {
   try {
     let subscription = req.subscription;
-    const subscriptionInStripe = await stripe.subscriptions.retrieve(subscription.id);
+    const subscriptionInStripe = await stripe.subscriptions.retrieve(
+      subscription.id
+    );
     await Subscription.update(
       {
         status: subscriptionInStripe.status,
-        next_payment: moment(subscriptionInStripe.current_period_end * 1000).format('YYYY-MM-DD HH:mm:ss'),
+        next_payment: moment(
+          subscriptionInStripe.current_period_end * 1000
+        ).format('YYYY-MM-DD HH:mm:ss'),
         plan_id: subscriptionInStripe.plan.id,
-        cancel_at_period_end: subscriptionInStripe.cancel_at_period_end
+        cancel_at_period_end: subscriptionInStripe.cancel_at_period_end,
       },
-      {where: {id: subscription.id}}
+      { where: { id: subscription.id } }
     );
     subscription = await Subscription.findByPk(subscription.id);
     req.subscription = subscription;
-    next()
+    next();
   } catch (e) {
-    throw e
+    throw e;
   }
 };
 
-module.exports= {
+module.exports = {
   isUserActive,
   userIsAuth,
   userHasSubscription,
-  retrieveAndUpdateUserSubscription
+  retrieveAndUpdateUserSubscription,
 };

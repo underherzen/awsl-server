@@ -1,10 +1,13 @@
 require('dotenv').config();
 const cron = require('node-cron');
 
-const {dailyText, sendFirstDailySms, sendUndeliveredDailyMessages} = require('./crons/messages');
-const {checkUserStartDay} = require('./crons/users');
-const {CRON_INTERVALS} = require('./constants');
-
+const {
+  dailyText,
+  sendFirstDailySms,
+  sendUndeliveredDailyMessages,
+} = require('./crons/messages');
+const { checkUserStartDay } = require('./crons/users');
+const { CRON_INTERVALS } = require('./constants');
 
 //schedule tasks
 
@@ -18,5 +21,3 @@ const {CRON_INTERVALS} = require('./constants');
 
 // send undelivered messages
 cron.schedule(CRON_INTERVALS.EVERY10SECONDS, sendUndeliveredDailyMessages);
-
-

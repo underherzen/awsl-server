@@ -1,7 +1,7 @@
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
-const {User, Subscription} = require('../../../../models');
-const {STRIPE_STATUSES, STRIPE_CONSTANTS} = require('../../../../constants');
-const {userToFront} = require('../../../../modules/helpers');
+const { User, Subscription } = require('../../../../models');
+const { STRIPE_STATUSES, STRIPE_CONSTANTS } = require('../../../../constants');
+const { userToFront } = require('../../../../modules/helpers');
 
 /**
  * this must be one of several endpoints that changes the `Subscription` table DIRECTLY
@@ -21,23 +21,23 @@ const pauseSubscription = async (req, res, next) => {
   });
   // and then change db record for returning to user
   await Subscription.update(
-    {status: STRIPE_STATUSES.PAUSED, cancel_at_period_end: true},
-    {where: {id: subscription.id}}
+    { status: STRIPE_STATUSES.PAUSED, cancel_at_period_end: true },
+    { where: { id: subscription.id } }
   );
 
   user = await userToFront(user.id);
-  res.send({user});
+  res.send({ user });
 };
 
 const resetSubscription = async (req, res, next) => {
   let user = req.user;
   const subscription = req.subscription;
-  console.log(subscription)
+  console.log(subscription);
 
   // if canceled
   if (subscription.status === STRIPE_STATUSES.CANCELED) {
     if (!subscription.last4) {
-      res.status(400).send({error: 'You should add CC details!'})
+      res.status(400).send({ error: 'You should add CC details!' });
       return;
     }
     const product = {
@@ -47,13 +47,12 @@ const resetSubscription = async (req, res, next) => {
     let coupon;
     if (subscription.coupon) {
       try {
-        coupon = await stripe.coupons.retrieve(subscription.coupon)
-      } catch (e) {
-      }
+        coupon = await stripe.coupons.retrieve(subscription.coupon);
+      } catch (e) {}
     }
     const newSubscription = await stripe.subscriptions.create({
       customer: subscription.customer,
-      items: [{plan: product.id}],
+      items: [{ plan: product.id }],
       coupon: coupon ? coupon.id : '',
     });
 
@@ -65,40 +64,51 @@ const resetSubscription = async (req, res, next) => {
       },
       {
         where: {
-          id: subscription.id
-        }
+          id: subscription.id,
+        },
       }
     );
     user = await userToFront(user.id);
-    res.send({user});
+    res.send({ user });
     return;
-  } else if (  // if it's only on pause
-    [STRIPE_STATUSES.PAUSED, STRIPE_STATUSES.ACTIVE, STRIPE_STATUSES.TRIALING].includes(subscription.status)
-    && subscription.cancel_at_period_end === true
+  } else if (
+    // if it's only on pause
+    [
+      STRIPE_STATUSES.PAUSED,
+      STRIPE_STATUSES.ACTIVE,
+      STRIPE_STATUSES.TRIALING,
+    ].includes(subscription.status) &&
+    subscription.cancel_at_period_end === true
   ) {
     await Promise.all([
       stripe.subscriptions.update(subscription.id, {
-        cancel_at_period_end: false
+        cancel_at_period_end: false,
       }),
-      Subscription.update({cancel_at_period_end: false}, {where: {id: subscription.id}})
+      Subscription.update(
+        { cancel_at_period_end: false },
+        { where: { id: subscription.id } }
+      ),
     ]);
     user = await userToFront(user.id);
-    res.send({user});
+    res.send({ user });
   } else if (subscription.status === STRIPE_STATUSES.PAST_DUE) {
     if (!subscription.last4) {
-      res.status(400).send({error: 'You should add CC details'});
+      res.status(400).send({ error: 'You should add CC details' });
       return;
     }
     await stripe.subscriptions.update(subscription.id, {
       cancel_at_period_end: false,
     });
-    await Subscription.update({cancel_at_period_end: false}, {where: {id: subscription.id}});
+    await Subscription.update(
+      { cancel_at_period_end: false },
+      { where: { id: subscription.id } }
+    );
     user = await userToFront(user.id);
-    res.send({user});
-    return
+    res.send({ user });
+    return;
   }
-  console.log('HERE')
-  res.status(400).send({error: 'Something went wrong'})
+  console.log('HERE');
+  res.status(400).send({ error: 'Something went wrong' });
 };
 
 const changePaymentMethod = async (req, res, next) => {
@@ -116,19 +126,21 @@ const changePaymentMethod = async (req, res, next) => {
     const source = await stripe.customers.createSource(subscription.customer, {
       source: body.stripe_token,
     });
-    await Subscription.update({last4: source.last4}, {where: {id: subscription.id}})
-
+    await Subscription.update(
+      { last4: source.last4 },
+      { where: { id: subscription.id } }
+    );
   } catch (e) {
     console.log(e);
-    res.status(400).send({error: 'Something went wrong'});
+    res.status(400).send({ error: 'Something went wrong' });
     return;
   }
   user = await userToFront(user.id);
-  res.send({user})
+  res.send({ user });
 };
 
 module.exports = {
   pauseSubscription,
   resetSubscription,
-  changePaymentMethod
+  changePaymentMethod,
 };

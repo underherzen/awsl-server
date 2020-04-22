@@ -2,13 +2,31 @@ const express = require('express');
 const router = express.Router();
 const _ = require('lodash');
 const moment = require('moment');
-const {User, Subscription, ResetCurrentCourseToken, Token} = require('../../../models');
+const {
+  User,
+  Subscription,
+  ResetCurrentCourseToken,
+  Token,
+} = require('../../../models');
 const bcrypt = require('bcryptjs');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
-const {generateToken, retrieveToken, updateToken, retrieveCoupon, toValidPhone, googleCheckToken, fbCheckToken, generateResetToken} = require('../../../modules/api/auth');
-const {userToFront} = require('../../../modules/helpers');
-const {STRIPE_CONSTANTS, USER_TYPES, TOKEN_TYPES} = require('../../../constants');
-const {Op} = require('sequelize');
+const {
+  generateToken,
+  retrieveToken,
+  updateToken,
+  retrieveCoupon,
+  toValidPhone,
+  googleCheckToken,
+  fbCheckToken,
+  generateResetToken,
+} = require('../../../modules/api/auth');
+const { userToFront } = require('../../../modules/helpers');
+const {
+  STRIPE_CONSTANTS,
+  USER_TYPES,
+  TOKEN_TYPES,
+} = require('../../../constants');
+const { Op } = require('sequelize');
 const http = require('http');
 const axios = require('axios');
 
@@ -25,31 +43,33 @@ const login = async (req, res, next) => {
       res.sendStatus(401);
       return;
     }
-    user = await User.findOne({where: {google_id: body.googleID}});
+    user = await User.findOne({ where: { google_id: body.googleID } });
   } else if (body.facebookID) {
     const response = await fbCheckToken(body.accessToken);
     if (!response) {
       res.sendStatus(401);
       return;
     }
-    user = await User.findOne({where: {facebook_id: body.facebookID}})
+    user = await User.findOne({ where: { facebook_id: body.facebookID } });
   } else {
     if (!body.email || !body.password) {
       res.sendStatus(400);
       return;
     }
 
-    user = await User.findOne({where: {email: body.email}});
-    const isValidPassword = (await bcrypt.compare(body.password, user.password)) || body.password === user.password; // for test
+    user = await User.findOne({ where: { email: body.email } });
+    const isValidPassword =
+      (await bcrypt.compare(body.password, user.password)) ||
+      body.password === user.password; // for test
     if (!isValidPassword) {
       res.sendStatus(400);
-      return
+      return;
     }
   }
 
   if (!user) {
     res.sendStatus(404);
-    return
+    return;
   }
 
   const token = await generateToken(user);
@@ -63,7 +83,7 @@ const login = async (req, res, next) => {
 
   const response = {
     token,
-    user
+    user,
   };
 
   res.send(response);
@@ -86,7 +106,7 @@ const whoami = async (req, res, next) => {
 
   const user = await userToFront(token.user_id);
 
-  res.send({user});
+  res.send({ user });
 };
 
 const signUp = async (req, res, next) => {
@@ -100,11 +120,15 @@ const signUp = async (req, res, next) => {
       const response = await googleCheckToken(body.accessToken);
       if (!response) {
         res.sendStatus(400);
-        return
+        return;
       }
-      const existingUser = await User.findOne({where: {google_id: body.googleID}});
+      const existingUser = await User.findOne({
+        where: { google_id: body.googleID },
+      });
       if (existingUser) {
-        res.status(400).send({error: 'User with provided account already exists'});
+        res
+          .status(400)
+          .send({ error: 'User with provided account already exists' });
         return;
       }
       params.google_id = body.googleID;
@@ -112,19 +136,22 @@ const signUp = async (req, res, next) => {
       res.sendStatus(400);
       return;
     }
-
   }
 
   if (body.facebookID) {
     const response = await fbCheckToken(body.accessToken);
     if (!response) {
-      res.status(400).send({error: 'Bad credentials'});
+      res.status(400).send({ error: 'Bad credentials' });
       return;
     }
 
-    const existingUser = await User.findOne({where: {facebook_id: body.facebookID}});
+    const existingUser = await User.findOne({
+      where: { facebook_id: body.facebookID },
+    });
     if (existingUser) {
-      res.status(400).send({error: 'User with provided account already exists'});
+      res
+        .status(400)
+        .send({ error: 'User with provided account already exists' });
       return;
     }
 
@@ -133,36 +160,33 @@ const signUp = async (req, res, next) => {
 
   body.phone = toValidPhone(body.phone); // this is for uni format checking and storing
   if (!body.phone) {
-    res.status(400).send({error: 'Invalid phone number'});
+    res.status(400).send({ error: 'Invalid phone number' });
     return;
   }
 
   const existingUser = await User.findOne({
     where: {
-      [Op.or]: [
-        {email: body.email},
-        {phone: body.phone}
-      ]
-    }
+      [Op.or]: [{ email: body.email }, { phone: body.phone }],
+    },
   });
 
   if (existingUser) {
     if (existingUser.email === body.email) {
-      res.status(400).send({error: 'User with same email already exists'})
+      res.status(400).send({ error: 'User with same email already exists' });
     } else if (existingUser.phone === body.phone) {
-      res.status(400).send({error: 'User with same phone already exists'})
+      res.status(400).send({ error: 'User with same phone already exists' });
     }
     return;
   }
 
   // if not social and not password => exit
   if (!(body.googleID || body.facebookID) && !body.password) {
-    res.status(400).send({error: 'Password is required'})
+    res.status(400).send({ error: 'Password is required' });
   }
 
   if (body.password) {
     const password = await bcrypt.hash(body.password, 10);
-    params.password = password
+    params.password = password;
   }
 
   const startDay = body.startDay || moment().format('YYYY-MM-DD HH:mm:ss');
@@ -177,12 +201,14 @@ const signUp = async (req, res, next) => {
     timezone: body.timezone,
     start_day: startDay,
     start_immediately: !body.startDay,
-    is_active: !body.startDay
+    is_active: !body.startDay,
   };
 
   const newUser = await User.create(params);
 
-  const fullName = [body.firstName, body.lastName].filter(el => !!el).join(' ');
+  const fullName = [body.firstName, body.lastName]
+    .filter((el) => !!el)
+    .join(' ');
   console.log(newUser);
   const product = {
     id: STRIPE_CONSTANTS.plans.annual_99, // NOTE: This is the ID for the plan, NOT the product, in stripe's API thingamajig (https://dashboard.stripe.com/plans/annual)
@@ -195,14 +221,14 @@ const signUp = async (req, res, next) => {
     name: fullName,
     email: body.email,
     phone: body.phone,
-    description: `${product.name} customer.`
+    description: `${product.name} customer.`,
   });
 
   const trialEnd = moment().add(STRIPE_CONSTANTS.trialDays, 'd');
 
   const subscription = await stripe.subscriptions.create({
     customer: customer.id,
-    items: [{plan: product.id}],
+    items: [{ plan: product.id }],
     coupon,
     trial_end: trialEnd.unix(),
   });
@@ -214,7 +240,7 @@ const signUp = async (req, res, next) => {
     coupon,
     plan_id: product.id,
     status: subscription.status,
-    next_payment: trialEnd.format('YYYY-MM-DD HH:mm:ss')
+    next_payment: trialEnd.format('YYYY-MM-DD HH:mm:ss'),
   });
 
   const resetToken = await generateResetToken(newUser.id);
@@ -222,7 +248,7 @@ const signUp = async (req, res, next) => {
     user_id: newUser.id,
     token: resetToken,
     attempts_left: 3,
-    expiry: trialEnd.format('YYYY-MM-DD HH:mm:ss')
+    expiry: trialEnd.format('YYYY-MM-DD HH:mm:ss'),
   });
 
   const token = await generateToken(newUser);
@@ -230,7 +256,7 @@ const signUp = async (req, res, next) => {
 
   const response = {
     user,
-    token
+    token,
   };
 
   res.send(response);
@@ -240,23 +266,23 @@ const userLookup = async (req, res, next) => {
   const body = req.query;
   const params = {};
   if (body.email) {
-    params.email = body.email
+    params.email = body.email;
   } else if (body.googleID) {
-    params.google_id = body.googleID
+    params.google_id = body.googleID;
   } else if (body.facebookID) {
-    params.facebook_id = body.facebookID
+    params.facebook_id = body.facebookID;
   } else {
     res.sendStatus(400);
     return;
   }
   const existingUser = await User.findOne({
-    where: {...params}
+    where: { ...params },
   });
   if (existingUser) {
     res.sendStatus(400);
     return;
   }
-  res.sendStatus(204)
+  res.sendStatus(204);
 };
 
 const authBySmsToken = async (req, res, next) => {
@@ -269,14 +295,14 @@ const authBySmsToken = async (req, res, next) => {
     where: {
       token: body.token,
       user_id: body.user_id,
-      type: TOKEN_TYPES.SMS_AUTH
-    }
+      type: TOKEN_TYPES.SMS_AUTH,
+    },
   });
   if (!token) {
     res.sendStatus(404);
   }
-  const authToken = await generateToken({id: body.user_id});
-  res.send({token: authToken});
+  const authToken = await generateToken({ id: body.user_id });
+  res.send({ token: authToken });
 };
 
 module.exports = {
@@ -284,5 +310,5 @@ module.exports = {
   login,
   signUp,
   userLookup,
-  authBySmsToken
+  authBySmsToken,
 };

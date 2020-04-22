@@ -1,10 +1,13 @@
-const { userToFront } = require("../../../modules/helpers");
-const {sendWelcomeMessage} = require('../../../modules/api/guides');
-const {getTwilioNumber, sendDailyText} = require('../../../modules/twilio');
-const moment = require("moment");
-const { Op } = require("sequelize");
-const { retrieveToken } = require("../../../modules/api/auth");
-const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const { userToFront } = require('../../../modules/helpers');
+const { sendWelcomeMessage } = require('../../../modules/api/guides');
+const { getTwilioNumber, sendDailyText } = require('../../../modules/twilio');
+const moment = require('moment');
+const { Op } = require('sequelize');
+const { retrieveToken } = require('../../../modules/api/auth');
+const client = require('twilio')(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
 const {
   UserGuide,
   User,
@@ -12,10 +15,10 @@ const {
   Guide,
   GuideDay,
   ResetCurrentCourseToken,
-  Message
-} = require("../../../models");
-const {MESSAGES_TYPES} = require('../../../constants');
-const _ = require("lodash");
+  Message,
+} = require('../../../models');
+const { MESSAGES_TYPES } = require('../../../constants');
+const _ = require('lodash');
 
 const loadGuides = async (req, res, next) => {
   const guides = await Guide.findAll();
@@ -27,7 +30,7 @@ const selectGuide = async (req, res, next) => {
   let { user } = req;
 
   if (user.guide_id) {
-    res.status(400).send({ error: "You already have guide" });
+    res.status(400).send({ error: 'You already have guide' });
     return;
   }
 
@@ -46,16 +49,15 @@ const selectGuide = async (req, res, next) => {
   });
 
   if (previousSameGuide) {
-    res.status(400, { error: "You have already passed this guide!" });
+    res.status(400, { error: 'You have already passed this guide!' });
     return;
   }
-
 
   const existingWelcomeMessage = await Message.findOne({
     where: {
       user_id: user.id,
-      type: MESSAGES_TYPES.WELCOME
-    }
+      type: MESSAGES_TYPES.WELCOME,
+    },
   });
 
   const dayToAssign = user.is_active ? 1 : 0;
@@ -94,27 +96,30 @@ const selectGuide = async (req, res, next) => {
       GuideDay.findOne({
         where: {
           guide_id: guide.id,
-          day: 1
-        }
+          day: 1,
+        },
       }),
       UserGuide.findOne({
         where: {
           user_id: user.id,
-          guide_id: guide.id
-        }
-      })
+          guide_id: guide.id,
+        },
+      }),
     ]);
     const message = await sendDailyText(user, guideDay, 1, guide, userGuide);
     if (message) {
-      await UserGuideDay.update({
-        message_id: message.id
-      }, {
-        where: {
-          user_id: user.id,
-          guide_id: guide.id,
-          day: 1
+      await UserGuideDay.update(
+        {
+          message_id: message.id,
+        },
+        {
+          where: {
+            user_id: user.id,
+            guide_id: guide.id,
+            day: 1,
+          },
         }
-      })
+      );
     }
   }
 
@@ -146,7 +151,7 @@ const acceptGuideDay = async (req, res, next) => {
   let { user } = req;
 
   if (_.isUndefined(day_to_accept) || _.isUndefined(guide_id)) {
-    res.status(400).send({ error: "Bad request!" });
+    res.status(400).send({ error: 'Bad request!' });
     return;
   }
 
@@ -177,7 +182,7 @@ const getGuideDaysForSlider = async (req, res, next) => {
     return;
   }
   const guideDays = await GuideDay.findAll({
-    attributes: ["title", "day"],
+    attributes: ['title', 'day'],
     where: {
       guide_id: body.guide_id,
       day: {
@@ -199,7 +204,7 @@ const resetGuide = async (req, res, next) => {
   const body = req.body;
 
   if (!user.guide_id) {
-    res.status(400).send({ error: "You don`t have any guides now" });
+    res.status(400).send({ error: 'You don`t have any guides now' });
     return;
   }
 
@@ -214,7 +219,7 @@ const resetGuide = async (req, res, next) => {
   console.log(token);
 
   if (!token || moment() > moment(token.expiry) || token.attempts_left === 0) {
-    res.status(400).send({ error: "You can`t reset course now" });
+    res.status(400).send({ error: 'You can`t reset course now' });
     return;
   }
 
