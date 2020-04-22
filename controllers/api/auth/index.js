@@ -1,5 +1,3 @@
-const express = require('express');
-const router = express.Router();
 const _ = require('lodash');
 const moment = require('moment');
 const {
@@ -25,6 +23,7 @@ const {
   STRIPE_CONSTANTS,
   USER_TYPES,
   TOKEN_TYPES,
+  COUPONS_DURATIONS,
 } = require('../../../constants');
 const { Op } = require('sequelize');
 const http = require('http');
@@ -58,6 +57,14 @@ const login = async (req, res, next) => {
     }
 
     user = await User.findOne({ where: { email: body.email } });
+
+    if (!user) {
+      res
+        .status(404)
+        .send({ error: 'User with provided credentials las no found' });
+      return;
+    }
+
     const isValidPassword =
       (await bcrypt.compare(body.password, user.password)) ||
       body.password === user.password; // for test
@@ -216,6 +223,8 @@ const signUp = async (req, res, next) => {
   };
 
   const coupon = body.coupon ? await retrieveCoupon(body.coupon) : null;
+  const isFreeReg =
+    coupon.duration === COUPONS_DURATIONS.FOREVER && coupon.percent_off === 100;
 
   const customer = await stripe.customers.create({
     name: fullName,
@@ -229,7 +238,7 @@ const signUp = async (req, res, next) => {
   const subscription = await stripe.subscriptions.create({
     customer: customer.id,
     items: [{ plan: product.id }],
-    coupon,
+    coupon: coupon ? coupon.id : null,
     trial_end: trialEnd.unix(),
   });
 
@@ -237,9 +246,10 @@ const signUp = async (req, res, next) => {
     id: subscription.id,
     user_id: newUser.id,
     customer: customer.id,
-    coupon,
+    coupon: coupon ? coupon.id : null,
     plan_id: product.id,
     status: subscription.status,
+    is_free_reg: isFreeReg,
     next_payment: trialEnd.format('YYYY-MM-DD HH:mm:ss'),
   });
 

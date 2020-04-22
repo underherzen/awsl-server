@@ -49,6 +49,7 @@ const MESSAGES_TYPES = {
   REPLY_STOP: 'reply_stop',
   REPLY_UNSTOP: 'reply_unstop',
   REPLY_HELP: 'reply_help',
+  DISCOUNT: 'discount',
 };
 
 const MESSAGES_STATUSES = {
@@ -115,6 +116,10 @@ const REPLY_COMMANDS = {
   COMMUNITY: 'COMMUNITY',
 };
 
+const COUPONS_DURATIONS = {
+  FOREVER: 'forever',
+};
+
 module.exports = {
   STRIPE_CONSTANTS,
   USER_TYPES,
@@ -128,4 +133,5 @@ module.exports = {
   FAILED_MESSAGES_STATUSES,
   REPLY_TEXTS,
   REPLY_COMMANDS,
+  COUPONS_DURATIONS,
 };

@@ -5,6 +5,7 @@ const {
   UserGuideDay,
   Message,
   Guide,
+  Subscription,
 } = require('../../models');
 const { Op } = require('sequelize');
 const client = require('twilio')(
@@ -27,6 +28,8 @@ const {
   MESSAGES_STATUSES,
   MESSAGES_TYPES,
   FAILED_MESSAGES_STATUSES,
+  STRIPE_STATUSES,
+  ACTIVE_STATUSES,
 } = require('../../constants');
 
 const sendUndeliveredDailyMessages = async () => {
@@ -96,13 +99,13 @@ const sendFirstDailySms = async () => {
       ]);
 
       const diff = moment().diff(moment(userGuide.created_at), 'minutes');
-      console.log('DIFF')
+      console.log('DIFF');
       console.log(diff);
       if (diff !== 3) {
         return;
       }
       const message = await sendDailyText(user, guideDay, 1, guide, userGuide);
-      console.log(message)
+      console.log(message);
       if (message) {
         await UserGuideDay.update(
           {
@@ -260,8 +263,82 @@ const dailyText = async () => {
   );
 };
 
+const sendDiscountSms = async () => {
+  const timezones = getTimezones(15);
+
+  const subscriptions = await Subscription.findAll({
+    where: {
+      status: STRIPE_STATUSES.TRIALING,
+      next_payment: {
+        [Op.lte]: moment().add(8, 'd').toDate(),
+        [Op.gte]: moment().add(6, 'd').toDate(),
+      },
+      last4: null,
+      is_free_reg: false,
+    },
+  });
+
+  await Promise.all(
+    subscriptions.map(async (subscription) => {
+      const user = await User.findByPk(subscription.user_id);
+
+      if (
+        !timezones.includes(user.timezone) ||
+        !user.guide_id ||
+        !user.can_receive_texts
+      ) {
+        return;
+      }
+
+      const diff = moment().diff(moment(user.start_day), 'd');
+      if (diff !== 14) {
+        return;
+      }
+
+      const [guide, smsAuthToken, userGuide] = await Promise.all([
+        Guide.findByPk(user.guide_id),
+        generateSmsAuthToken(user.id),
+        UserGuide.findOne({
+          where: {
+            user_id: user.id,
+            guide_id: user.guide_id,
+          },
+        }),
+      ]);
+
+      const guideUrl = `${process.env.BASE_URL}/guides/${guide.url_safe_name}/day-${userGuide.day}/`;
+      const shortUrl = await shortener.createShort(
+        `${process.env.BASE_URL}?redirect_url=${guideUrl}&uts=${smsAuthToken}&ui=${user.id}&show_discount_modal=true`,
+        user.id
+      );
+
+      const messageText = `Everyone loves gifts, right? If you haven't noticed yet, we have a gift waiting for you on today's challenge page. HINT: it will disappear at midnight. Click here to snag it: ${shortUrl}`;
+      const messageObject = {
+        from: await getTwilioNumber(client, user.phone),
+        body: messageText,
+        to: user.phone,
+        statusCallback: `${process.env.API_URL}/webhooks/twilio/status-callback/`,
+        statusCallbackMethod: 'POST',
+      };
+      const response = await sendInternationalSms(client, messageObject);
+      if (response) {
+        await Message.create({
+          user_id: user.id,
+          from: messageObject.from,
+          to: messageObject.to,
+          text_message: messageObject.body,
+          type: MESSAGES_TYPES.DISCOUNT,
+          twilio_sms_id: response.sid,
+          status: response.status,
+        });
+      }
+    })
+  );
+};
+
 module.exports = {
   dailyText,
   sendFirstDailySms,
   sendUndeliveredDailyMessages,
+  sendDiscountSms,
 };

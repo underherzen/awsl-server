@@ -139,8 +139,24 @@ const changePaymentMethod = async (req, res, next) => {
   res.send({ user });
 };
 
+const remindAboutSubscriptionEnd = async (req, res, next) => {
+  const user = req.user;
+  await User.update(
+    {
+      remind_about_sub_end: true,
+    },
+    {
+      where: {
+        id: user.id,
+      },
+    }
+  );
+  res.status(200).send({ message: 'You will be reminded' });
+};
+
 module.exports = {
   pauseSubscription,
   resetSubscription,
   changePaymentMethod,
+  remindAboutSubscriptionEnd,
 };

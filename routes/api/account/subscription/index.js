@@ -23,4 +23,9 @@ router.post(
   subscriptionController.changePaymentMethod
 );
 
+router.post(
+  '/remind_about_subscription_end',
+  subscriptionController.remindAboutSubscriptionEnd
+);
+
 module.exports = router;

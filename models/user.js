@@ -69,6 +69,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
       },
+      remind_about_sub_end: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
       created_at: {
         allowNull: false,
         type: DataTypes.DATE,

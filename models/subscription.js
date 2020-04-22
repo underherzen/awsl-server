@@ -29,6 +29,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         type: DataTypes.STRING(100),
       },
+      is_free_reg: {
+        defaultValue: false,
+        type: DataTypes.BOOLEAN,
+      },
       cancel_at_period_end: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
