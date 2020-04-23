@@ -50,6 +50,7 @@ const MESSAGES_TYPES = {
   REPLY_UNSTOP: 'reply_unstop',
   REPLY_HELP: 'reply_help',
   DISCOUNT: 'discount',
+  AFTER_FIRST_DAILY_MESSAGE: 'after_first_daily_message'
 };
 
 const MESSAGES_STATUSES = {

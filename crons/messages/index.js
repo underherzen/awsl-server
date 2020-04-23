@@ -349,6 +349,16 @@ const sendRemindMessages = async () => {
     })
   );
 };
+
+const sendMessageAfterFirstDailyMessage = async () => {
+  const messages = await Message.findAll({
+    where: {
+
+    }
+  })
+};
+
+
 module.exports = {
   dailyText,
   sendFirstDailySms,

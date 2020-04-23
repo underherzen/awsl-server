@@ -19,7 +19,25 @@ const chooseNewDesign = async (req, res, next) => {
   res.send({ user });
 };
 
-const rejectNewDesign = async (req, res, next) => {
+const returnOld = async (req, res, next) => {
+  let user = req.user;
+  await User.update(
+    {
+      new_design: false,
+      suggest_new_design: false,
+    },
+    {
+      where: {
+        id: user.id,
+      },
+    }
+  );
+
+  user = await userToFront(user.id);
+  res.send({ user });
+};
+
+const rejectSuggestion = async (req, res, next) => {
   let user = req.user;
   await User.update(
     {
@@ -39,5 +57,6 @@ const rejectNewDesign = async (req, res, next) => {
 
 module.exports = {
   chooseNewDesign,
-  rejectNewDesign,
+  returnOld,
+  rejectSuggestion,
 };

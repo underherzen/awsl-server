@@ -5,10 +5,10 @@ const designController = require('../../../controllers/api/design');
 
 router.use('/*', userIsAuth);
 
-router.post('/choose-new', designController.chooseNewDesign);
+router.post('/choose_new', designController.chooseNewDesign);
 
-router.post('/reject-new', designController.rejectNewDesign);
+router.post('/return_old', designController.returnOld);
 
-
+router.post('/reject_suggestion', designController.rejectSuggestion);
 
 module.exports = router;
