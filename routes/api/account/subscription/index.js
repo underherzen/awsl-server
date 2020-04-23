@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const subscriptionController = require('../../../../controllers/api/account/subscription');
-const {
-  retrieveAndUpdateUserSubscription,
-} = require('../../../../controllers');
+const { retrieveAndUpdateUserSubscription } = require('../../../../controllers');
 
 router.post(
   '/pause-subscription',
@@ -23,9 +21,6 @@ router.post(
   subscriptionController.changePaymentMethod
 );
 
-router.post(
-  '/remind_about_subscription_end',
-  subscriptionController.remindAboutSubscriptionEnd
-);
+router.post('/remind_about_subscription_end', subscriptionController.remindAboutSubscriptionEnd);
 
 module.exports = router;

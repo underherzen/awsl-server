@@ -42,9 +42,7 @@ const retrieveToken = async (headers) => {
 };
 
 const updateToken = async (token = {}) => {
-  const newExpiry = moment(token.expiry)
-    .add(10, 'm')
-    .format('YYYY-MM-DD HH:mm:ss');
+  const newExpiry = moment(token.expiry).add(10, 'm').format('YYYY-MM-DD HH:mm:ss');
   await Session.update({ expiry: newExpiry }, { where: { id: token.id } });
   return true;
 };

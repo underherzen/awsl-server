@@ -5,6 +5,8 @@ const {
   dailyText,
   sendFirstDailySms,
   sendUndeliveredDailyMessages,
+  sendRemindMessages,
+  sendDiscountSms,
 } = require('./crons/messages');
 const { checkUserStartDay } = require('./crons/users');
 const { CRON_INTERVALS } = require('./constants');

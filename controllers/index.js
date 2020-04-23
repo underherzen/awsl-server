@@ -57,15 +57,13 @@ const userHasSubscription = async (req, res, next) => {
 const retrieveAndUpdateUserSubscription = async (req, res, next) => {
   try {
     let subscription = req.subscription;
-    const subscriptionInStripe = await stripe.subscriptions.retrieve(
-      subscription.id
-    );
+    const subscriptionInStripe = await stripe.subscriptions.retrieve(subscription.id);
     await Subscription.update(
       {
         status: subscriptionInStripe.status,
-        next_payment: moment(
-          subscriptionInStripe.current_period_end * 1000
-        ).format('YYYY-MM-DD HH:mm:ss'),
+        next_payment: moment(subscriptionInStripe.current_period_end * 1000).format(
+          'YYYY-MM-DD HH:mm:ss'
+        ),
         plan_id: subscriptionInStripe.plan.id,
         cancel_at_period_end: subscriptionInStripe.cancel_at_period_end,
       },

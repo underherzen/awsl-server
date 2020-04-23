@@ -2,10 +2,7 @@ const { Message } = require('../../models');
 const urlShortener = require('../urlShortener');
 const shortener = new urlShortener();
 const { generateSmsAuthToken, imageExists } = require('../helpers');
-const client = require('twilio')(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const { MESSAGES_TYPES } = require('../../constants');
 
 const personalizeTextMessage = (user, textMessage) => {
@@ -13,14 +10,8 @@ const personalizeTextMessage = (user, textMessage) => {
   return Object.keys(user).reduce((string, propertyName) => {
     // This normalizes the property names and makes the regex a lot more relaxed.
     // For example, with this, all of the following work: @[firstname], @[first Name], @[FiRsT   nAmE], etc
-    const textPropertyName = propertyName.replace(
-      /([a-z])([A-Z])/g,
-      '$1\\s*$2'
-    );
-    return string.replace(
-      new RegExp(`@\\[${textPropertyName}]`, 'ig'),
-      user[propertyName]
-    );
+    const textPropertyName = propertyName.replace(/([a-z])([A-Z])/g, '$1\\s*$2');
+    return string.replace(new RegExp(`@\\[${textPropertyName}]`, 'ig'), user[propertyName]);
   }, textMessage);
 };
 
@@ -146,7 +137,7 @@ const sendDailyText = async (user, guideDay, dayToAssign, guide, userGuide) => {
       });
       return message;
     } catch (e) {
-      console.log(e)
+      console.log(e);
       return null;
     }
   } catch (e) {

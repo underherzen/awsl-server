@@ -1,11 +1,6 @@
 const _ = require('lodash');
 const moment = require('moment');
-const {
-  User,
-  Subscription,
-  ResetCurrentCourseToken,
-  Token,
-} = require('../../../models');
+const { User, Subscription, ResetCurrentCourseToken, Token } = require('../../../models');
 const bcrypt = require('bcryptjs');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
 const {
@@ -59,15 +54,12 @@ const login = async (req, res, next) => {
     user = await User.findOne({ where: { email: body.email } });
 
     if (!user) {
-      res
-        .status(404)
-        .send({ error: 'User with provided credentials las no found' });
+      res.status(404).send({ error: 'User with provided credentials las no found' });
       return;
     }
 
     const isValidPassword =
-      (await bcrypt.compare(body.password, user.password)) ||
-      body.password === user.password; // for test
+      (await bcrypt.compare(body.password, user.password)) || body.password === user.password; // for test
     if (!isValidPassword) {
       res.sendStatus(400);
       return;
@@ -133,9 +125,7 @@ const signUp = async (req, res, next) => {
         where: { google_id: body.googleID },
       });
       if (existingUser) {
-        res
-          .status(400)
-          .send({ error: 'User with provided account already exists' });
+        res.status(400).send({ error: 'User with provided account already exists' });
         return;
       }
       params.google_id = body.googleID;
@@ -156,9 +146,7 @@ const signUp = async (req, res, next) => {
       where: { facebook_id: body.facebookID },
     });
     if (existingUser) {
-      res
-        .status(400)
-        .send({ error: 'User with provided account already exists' });
+      res.status(400).send({ error: 'User with provided account already exists' });
       return;
     }
 
@@ -213,9 +201,7 @@ const signUp = async (req, res, next) => {
 
   const newUser = await User.create(params);
 
-  const fullName = [body.firstName, body.lastName]
-    .filter((el) => !!el)
-    .join(' ');
+  const fullName = [body.firstName, body.lastName].filter((el) => !!el).join(' ');
   console.log(newUser);
   const product = {
     id: STRIPE_CONSTANTS.plans.annual_99, // NOTE: This is the ID for the plan, NOT the product, in stripe's API thingamajig (https://dashboard.stripe.com/plans/annual)
@@ -223,8 +209,7 @@ const signUp = async (req, res, next) => {
   };
 
   const coupon = body.coupon ? await retrieveCoupon(body.coupon) : null;
-  const isFreeReg =
-    coupon.duration === COUPONS_DURATIONS.FOREVER && coupon.percent_off === 100;
+  const isFreeReg = coupon.duration === COUPONS_DURATIONS.FOREVER && coupon.percent_off === 100;
 
   const customer = await stripe.customers.create({
     name: fullName,

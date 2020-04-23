@@ -46,13 +46,7 @@ const guidesToObjForFront = (userGuides, userGuideDays) => {
 
 const userToFront = async (id) => {
   let user, userGuides, userGuideDays, subscription, resetCurrentCourseToken;
-  [
-    user,
-    userGuides,
-    userGuideDays,
-    subscription,
-    resetCurrentCourseToken,
-  ] = await Promise.all([
+  [user, userGuides, userGuideDays, subscription, resetCurrentCourseToken] = await Promise.all([
     User.findByPk(id, { raw: true }),
     UserGuide.findAll({ where: { user_id: id } }),
     UserGuideDay.findAll({ where: { user_id: id } }),

@@ -8,10 +8,7 @@ const {
   Subscription,
 } = require('../../models');
 const { Op } = require('sequelize');
-const client = require('twilio')(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const moment = require('moment');
 const {
   personalizeTextMessage,
@@ -31,6 +28,8 @@ const {
   STRIPE_STATUSES,
   ACTIVE_STATUSES,
 } = require('../../constants');
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const sendUndeliveredDailyMessages = async () => {
   let dailyUndeliveredMessages = await Message.findAll({
@@ -49,9 +48,7 @@ const sendUndeliveredDailyMessages = async () => {
     return diff >= 1;
   });
   await Promise.all(
-    dailyUndeliveredMessages.map((message) =>
-      sendUndeliveredMessage(message, client)
-    )
+    dailyUndeliveredMessages.map((message) => sendUndeliveredMessage(message, client))
   );
 };
 
@@ -157,10 +154,7 @@ const dailyText = async () => {
      */
       if (userGuide.day === 21) {
         const dbPromises = [
-          UserGuide.update(
-            { completed: true },
-            { where: { id: userGuide.id } }
-          ),
+          UserGuide.update({ completed: true }, { where: { id: userGuide.id } }),
           User.update({ guide_id: null }, { where: { id: user.id } }),
         ];
 
@@ -183,13 +177,7 @@ const dailyText = async () => {
         const guideDay = await GuideDay.findOne({
           where: { day: 22, guide_id: userGuide.guide_id },
         });
-        const message = await sendDailyText(
-          user,
-          guideDay,
-          22,
-          guide,
-          userGuide
-        );
+        const message = await sendDailyText(user, guideDay, 22, guide, userGuide);
         await UserGuideDay.create({
           user_id: user.id,
           guide_id: userGuide.guide_id,
@@ -228,13 +216,7 @@ const dailyText = async () => {
           },
         });
 
-        const message = await sendDailyText(
-          user,
-          guideDay,
-          dayToAssign,
-          guide,
-          userGuide
-        );
+        const message = await sendDailyText(user, guideDay, dayToAssign, guide, userGuide);
 
         dbPromises.push(
           UserGuideDay.create({
@@ -282,11 +264,7 @@ const sendDiscountSms = async () => {
     subscriptions.map(async (subscription) => {
       const user = await User.findByPk(subscription.user_id);
 
-      if (
-        !timezones.includes(user.timezone) ||
-        !user.guide_id ||
-        !user.can_receive_texts
-      ) {
+      if (!timezones.includes(user.timezone) || !user.guide_id || !user.can_receive_texts) {
         return;
       }
 
@@ -336,9 +314,44 @@ const sendDiscountSms = async () => {
   );
 };
 
+const sendRemindMessages = async () => {
+  const timezones = getTimezones(6);
+  const subscriptions = await Subscription.findAll({
+    where: {
+      next_payment: {
+        [Op.lte]: moment().add(31, 'd').toDate(),
+        [Op.gte]: moment().add(29, 'd').toDate(),
+      },
+    },
+  });
+  await Promise.all(
+    subscriptions.map(async (subscription) => {
+      const diff = moment().diff(moment(subscription.next_payment), 'd');
+      if (diff !== 30) {
+        return;
+      }
+
+      const user = await User.findByPk(subscription.user_id);
+      if (!user.remind_about_sub_end || !timezones.includes(+user.timezone)) {
+        return;
+      }
+
+      const msg = {
+        to: user.email,
+        from: process.env.EMAIL,
+        subject: 'Subscription ends in 30 days',
+        text: 'We remind you that your current period subscription ends in 30 days!',
+        html: 'We remind you that your current period subscription ends in 30 days!',
+      };
+
+      return sgMail.send(msg);
+    })
+  );
+};
 module.exports = {
   dailyText,
   sendFirstDailySms,
   sendUndeliveredDailyMessages,
   sendDiscountSms,
+  sendRemindMessages,
 };

@@ -1,21 +1,11 @@
 const { Message, User } = require('../../../models');
-const {
-  REPLY_TEXTS,
-  REPLY_COMMANDS,
-  MESSAGES_TYPES,
-} = require('../../../constants');
+const { REPLY_TEXTS, REPLY_COMMANDS, MESSAGES_TYPES } = require('../../../constants');
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
-const {
-  parseUrlEncode,
-  generateSmsAuthToken,
-} = require('../../../modules/helpers');
+const { parseUrlEncode, generateSmsAuthToken } = require('../../../modules/helpers');
 const { getTwilioNumber } = require('../../../modules/twilio');
 const urlShortener = require('../../../modules/urlShortener');
 const shortener = new urlShortener();
-const client = require('twilio')(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 const twilioStatusCallback = async (req, res, next) => {
   const body = req.body;
@@ -59,14 +49,11 @@ const replyWebhook = async (req, res, next) => {
     }
 
     const isSentFromInternational =
-      (await getTwilioNumber(client, user.phone)) ===
-      process.env.INTERNATIONAL_PHONE;
+      (await getTwilioNumber(client, user.phone)) === process.env.INTERNATIONAL_PHONE;
 
     if (sentCommand === REPLY_COMMANDS.YES) {
       if (isSentFromInternational) {
-        message.media(
-          `${process.env.BASE_URL}/docs/contact-card-international.vcf`
-        );
+        message.media(`${process.env.BASE_URL}/docs/contact-card-international.vcf`);
       } else {
         message.media(`${process.env.BASE_URL}/docs/contact-card.vcf`);
       }

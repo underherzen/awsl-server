@@ -1,7 +1,4 @@
-const client = require('twilio')(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const { getTwilioNumber, sendInternationalSms } = require('../../twilio');
 const { User, Message } = require('../../../models');
 const { MESSAGES_TYPES } = require('../../../constants');

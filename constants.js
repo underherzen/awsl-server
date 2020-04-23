@@ -65,10 +65,7 @@ const MESSAGES_STATUSES = {
   READ: 'read',
 };
 
-const FAILED_MESSAGES_STATUSES = [
-  MESSAGES_STATUSES.FAILED,
-  MESSAGES_STATUSES.UNDELIVERED,
-];
+const FAILED_MESSAGES_STATUSES = [MESSAGES_STATUSES.FAILED, MESSAGES_STATUSES.UNDELIVERED];
 
 const CRON_INTERVALS = {
   EVERYSECOND: '* * * * * *',
@@ -94,11 +91,9 @@ const REPLY_TEXTS = {
     ' time. Challenges will still be available in your members area until your membership is complete. Can we ask—why' +
     ' did you decided to stop texts from LiveItUp?',
 
-  HELP:
-    'We’re here for you {0}. Email us at aly@goliveitup.com, and we’ll get back to you ASAP.',
+  HELP: 'We’re here for you {0}. Email us at aly@goliveitup.com, and we’ll get back to you ASAP.',
 
-  UNSTOP:
-    'We missed you! So glad to see you back. Pick your next challenge here: {0}',
+  UNSTOP: 'We missed you! So glad to see you back. Pick your next challenge here: {0}',
 
   COMMUNITY: `Hi, Radha here with LiveItUp! Thanks for texting! Are you ready to take action and find your dream community with my 21-Day Challenge? Here’s how to join:
 1. Go to the link below

@@ -73,21 +73,16 @@ const resetSubscription = async (req, res, next) => {
     return;
   } else if (
     // if it's only on pause
-    [
-      STRIPE_STATUSES.PAUSED,
-      STRIPE_STATUSES.ACTIVE,
-      STRIPE_STATUSES.TRIALING,
-    ].includes(subscription.status) &&
+    [STRIPE_STATUSES.PAUSED, STRIPE_STATUSES.ACTIVE, STRIPE_STATUSES.TRIALING].includes(
+      subscription.status
+    ) &&
     subscription.cancel_at_period_end === true
   ) {
     await Promise.all([
       stripe.subscriptions.update(subscription.id, {
         cancel_at_period_end: false,
       }),
-      Subscription.update(
-        { cancel_at_period_end: false },
-        { where: { id: subscription.id } }
-      ),
+      Subscription.update({ cancel_at_period_end: false }, { where: { id: subscription.id } }),
     ]);
     user = await userToFront(user.id);
     res.send({ user });
@@ -99,10 +94,7 @@ const resetSubscription = async (req, res, next) => {
     await stripe.subscriptions.update(subscription.id, {
       cancel_at_period_end: false,
     });
-    await Subscription.update(
-      { cancel_at_period_end: false },
-      { where: { id: subscription.id } }
-    );
+    await Subscription.update({ cancel_at_period_end: false }, { where: { id: subscription.id } });
     user = await userToFront(user.id);
     res.send({ user });
     return;
@@ -126,10 +118,7 @@ const changePaymentMethod = async (req, res, next) => {
     const source = await stripe.customers.createSource(subscription.customer, {
       source: body.stripe_token,
     });
-    await Subscription.update(
-      { last4: source.last4 },
-      { where: { id: subscription.id } }
-    );
+    await Subscription.update({ last4: source.last4 }, { where: { id: subscription.id } });
   } catch (e) {
     console.log(e);
     res.status(400).send({ error: 'Something went wrong' });

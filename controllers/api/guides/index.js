@@ -1,13 +1,10 @@
-const { userToFront } = require("../../../modules/helpers");
-const { sendWelcomeMessage } = require("../../../modules/api/guides");
-const { getTwilioNumber, sendDailyText } = require("../../../modules/twilio");
-const moment = require("moment");
-const { Op } = require("sequelize");
-const { retrieveToken } = require("../../../modules/api/auth");
-const client = require("twilio")(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+const { userToFront } = require('../../../modules/helpers');
+const { sendWelcomeMessage } = require('../../../modules/api/guides');
+const { getTwilioNumber, sendDailyText } = require('../../../modules/twilio');
+const moment = require('moment');
+const { Op } = require('sequelize');
+const { retrieveToken } = require('../../../modules/api/auth');
+const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const {
   UserGuide,
   User,
@@ -16,9 +13,9 @@ const {
   GuideDay,
   ResetCurrentCourseToken,
   Message,
-} = require("../../../models");
-const { MESSAGES_TYPES } = require("../../../constants");
-const _ = require("lodash");
+} = require('../../../models');
+const { MESSAGES_TYPES } = require('../../../constants');
+const _ = require('lodash');
 
 const loadGuides = async (req, res, next) => {
   const guides = await Guide.findAll();
@@ -30,7 +27,7 @@ const selectGuide = async (req, res, next) => {
   let { user } = req;
 
   if (user.guide_id) {
-    res.status(400).send({ error: "You already have guide" });
+    res.status(400).send({ error: 'You already have guide' });
     return;
   }
 
@@ -49,7 +46,7 @@ const selectGuide = async (req, res, next) => {
   });
 
   if (previousSameGuide) {
-    res.status(400, { error: "You have already passed this guide!" });
+    res.status(400, { error: 'You have already passed this guide!' });
     return;
   }
 
@@ -151,7 +148,7 @@ const acceptGuideDay = async (req, res, next) => {
   let { user } = req;
 
   if (_.isUndefined(day_to_accept) || _.isUndefined(guide_id)) {
-    res.status(400).send({ error: "Bad request!" });
+    res.status(400).send({ error: 'Bad request!' });
     return;
   }
 
@@ -180,7 +177,7 @@ const visitGuideDay = async (req, res, next) => {
   let { user } = req;
 
   if (_.isUndefined(day_to_visit) || _.isUndefined(guide_id)) {
-    res.status(400).send({ error: "Bad request!" });
+    res.status(400).send({ error: 'Bad request!' });
     return;
   }
 
@@ -211,7 +208,7 @@ const getGuideDaysForSlider = async (req, res, next) => {
     return;
   }
   const guideDays = await GuideDay.findAll({
-    attributes: ["title", "day"],
+    attributes: ['title', 'day'],
     where: {
       guide_id: body.guide_id,
       day: {
@@ -233,7 +230,7 @@ const resetGuide = async (req, res, next) => {
   const body = req.body;
 
   if (!user.guide_id) {
-    res.status(400).send({ error: "You don`t have any guides now" });
+    res.status(400).send({ error: 'You don`t have any guides now' });
     return;
   }
 
@@ -248,7 +245,7 @@ const resetGuide = async (req, res, next) => {
   console.log(token);
 
   if (!token || moment() > moment(token.expiry) || token.attempts_left === 0) {
-    res.status(400).send({ error: "You can`t reset course now" });
+    res.status(400).send({ error: 'You can`t reset course now' });
     return;
   }
 
