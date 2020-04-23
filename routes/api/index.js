@@ -5,6 +5,7 @@ const authRoutes = require('./auth');
 const accountRoutes = require('./account/');
 const shortUrlRoutes = require('./short_urls');
 const couponRoutes = require('./coupons');
+const designRoutes = require('./design');
 
 router.use('/guides', guideRoutes);
 
@@ -15,5 +16,7 @@ router.use('/account', accountRoutes);
 router.use('/short_urls', shortUrlRoutes);
 
 router.use('/coupons', couponRoutes);
+
+router.use('/design', designRoutes);
 
 module.exports = router;

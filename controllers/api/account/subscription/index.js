@@ -86,6 +86,7 @@ const resetSubscription = async (req, res, next) => {
     ]);
     user = await userToFront(user.id);
     res.send({ user });
+    return;
   } else if (subscription.status === STRIPE_STATUSES.PAST_DUE) {
     if (!subscription.last4) {
       res.status(400).send({ error: 'You should add CC details' });

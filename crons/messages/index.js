@@ -316,6 +316,7 @@ const sendDiscountSms = async () => {
 
 const sendRemindMessages = async () => {
   const timezones = getTimezones(6);
+  console.log('RUNNING REMIND MESSAGES FOR TIMEZONES ', timezones);
   const subscriptions = await Subscription.findAll({
     where: {
       next_payment: {

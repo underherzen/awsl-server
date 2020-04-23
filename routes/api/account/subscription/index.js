@@ -5,19 +5,19 @@ const { retrieveAndUpdateUserSubscription } = require('../../../../controllers')
 
 router.post(
   '/pause-subscription',
-  retrieveAndUpdateUserSubscription,
+  // retrieveAndUpdateUserSubscription,
   subscriptionController.pauseSubscription
 );
 
 router.post(
   '/reset-subscription',
-  retrieveAndUpdateUserSubscription,
+  // retrieveAndUpdateUserSubscription,
   subscriptionController.resetSubscription
 );
 
 router.post(
   '/change-payment-method',
-  retrieveAndUpdateUserSubscription,
+  // retrieveAndUpdateUserSubscription,
   subscriptionController.changePaymentMethod
 );
 

@@ -6,6 +6,4 @@ router.use('/subscriptions/update', stripeController.subscriptionUpdateWebhook);
 
 router.use('/customers/update', stripeController.customerUpdateWebhook);
 
-// router.use('/*', stripeController.getWebhook);
-
 module.exports = router;

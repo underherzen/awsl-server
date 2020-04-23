@@ -209,7 +209,7 @@ const signUp = async (req, res, next) => {
   };
 
   const coupon = body.coupon ? await retrieveCoupon(body.coupon) : null;
-  const isFreeReg = coupon.duration === COUPONS_DURATIONS.FOREVER && coupon.percent_off === 100;
+  const isFreeReg = coupon && coupon.duration === COUPONS_DURATIONS.FOREVER && coupon.percent_off === 100;
 
   const customer = await stripe.customers.create({
     name: fullName,
