@@ -2,6 +2,8 @@ const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
 const { User, Subscription } = require('../../../../models');
 const { STRIPE_STATUSES, STRIPE_CONSTANTS } = require('../../../../constants');
 const { userToFront } = require('../../../../modules/helpers');
+const { retrieveCoupon } = require('../../../../modules/stripe');
+const moment = require('moment');
 
 /**
  * this must be one of several endpoints that changes the `Subscription` table DIRECTLY
@@ -73,9 +75,7 @@ const resetSubscription = async (req, res, next) => {
     return;
   } else if (
     // if it's only on pause
-    [STRIPE_STATUSES.PAUSED, STRIPE_STATUSES.ACTIVE, STRIPE_STATUSES.TRIALING].includes(
-      subscription.status
-    ) &&
+    [STRIPE_STATUSES.PAUSED, STRIPE_STATUSES.ACTIVE, STRIPE_STATUSES.TRIALING].includes(subscription.status) &&
     subscription.cancel_at_period_end === true
   ) {
     await Promise.all([
@@ -144,9 +144,59 @@ const remindAboutSubscriptionEnd = async (req, res, next) => {
   res.status(200).send({ message: 'You will be reminded' });
 };
 
+const changeToDiscountPlan = async (req, res, next) => {
+  try {
+    const { subscription, body } = req;
+    let user = req.user;
+    const params = {
+      plan: STRIPE_CONSTANTS.plans.annual_79,
+      trial_end: moment().unix(),
+    };
+    if (body.coupon) {
+      const coupon = await retrieveCoupon(body.coupon);
+      if (coupon) {
+        params.coupon = coupon;
+      }
+    }
+    const subscriptionObj = await stripe.subscriptions.update(subscription.id, params);
+    await Subscription.update({
+      plan: STRIPE_CONSTANTS.plans.annual_79,
+      next_payment: moment(subscriptionObj.current_period_end * 1000).format('YYYY-MM-DD HH:mm:ss'),
+    });
+    user = await userToFront(user.id);
+    res.send({ user });
+  } catch (e) {
+    throw e;
+  }
+};
+
+const applyCouponToSubscription = async (req, res, next) => {
+  try {
+    const { body, subscription } = req;
+    if (!body.coupon) {
+      res.status(400).send({ error: 'Coupon must not be empty!' });
+      return;
+    }
+
+    const coupon = await retrieveCoupon(body.coupon);
+    if (!coupon) {
+      res.status(400).send({ error: 'Coupon doesnt exist' });
+      return;
+    }
+
+    await stripe.subscriptions.update(subscription.id, { coupon });
+
+    res.sendStatus(200);
+  } catch (e) {
+    throw e;
+  }
+};
+
 module.exports = {
   pauseSubscription,
   resetSubscription,
   changePaymentMethod,
   remindAboutSubscriptionEnd,
+  changeToDiscountPlan,
+  applyCouponToSubscription,
 };

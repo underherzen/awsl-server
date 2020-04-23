@@ -6,6 +6,7 @@ const {
   Subscription,
   ResetCurrentCourseToken,
   Token,
+  SubscriptionNotification,
 } = require('../models');
 const { TOKEN_TYPES } = require('../constants');
 const axios = require('axios');
@@ -45,13 +46,21 @@ const guidesToObjForFront = (userGuides, userGuideDays) => {
 };
 
 const userToFront = async (id) => {
-  let user, userGuides, userGuideDays, subscription, resetCurrentCourseToken;
-  [user, userGuides, userGuideDays, subscription, resetCurrentCourseToken] = await Promise.all([
+  let user, userGuides, userGuideDays, subscription, resetCurrentCourseToken, subscriptionNotification;
+  [
+    user,
+    userGuides,
+    userGuideDays,
+    subscription,
+    resetCurrentCourseToken,
+    subscriptionNotification,
+  ] = await Promise.all([
     User.findByPk(id, { raw: true }),
     UserGuide.findAll({ where: { user_id: id } }),
     UserGuideDay.findAll({ where: { user_id: id } }),
     Subscription.findOne({ where: { user_id: id } }),
     ResetCurrentCourseToken.findOne({ where: { user_id: id } }),
+    SubscriptionNotification.findOne({ where: { user_id: id } }),
   ]);
   // console.log(userGuides)
   // console.log(userGuideDays);
@@ -64,6 +73,7 @@ const userToFront = async (id) => {
   user.cancel_at_period_end = subscription.cancel_at_period_end;
   user.reset_current_course_token = resetCurrentCourseToken.token;
   user.reset_current_course_attempts = resetCurrentCourseToken.attempts_left;
+  user.subscription_notifications = subscriptionNotification;
   return user;
 };
 

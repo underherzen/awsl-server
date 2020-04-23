@@ -73,14 +73,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
-      new_design: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
-      },
-      suggest_new_design: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
-      },
       created_at: {
         allowNull: false,
         type: DataTypes.DATE,

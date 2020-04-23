@@ -2,6 +2,7 @@ const fullGuides = require('./fullGuides.json');
 const { Guide, GuideDay } = require('./models');
 const guideList = require('./guideList.json');
 let tmp = [];
+const date = Date.now();
 for (let guide of Object.keys(fullGuides)) {
   // console.log(fullGuides[guide])
   const processedGuide = fullGuides[guide];
@@ -62,7 +63,10 @@ Promise.all(tmp).then((response) => {
         tmp.push(query);
       }
       Promise.all(tmp)
-        .then((response) => console.log(response))
+        .then((response) => {
+          console.log(Date.now() - date)
+          console.log(response)
+        })
         .catch((e) => console.log(e));
     })
     .catch((e) => console.log(e));

@@ -50,7 +50,7 @@ const MESSAGES_TYPES = {
   REPLY_UNSTOP: 'reply_unstop',
   REPLY_HELP: 'reply_help',
   DISCOUNT: 'discount',
-  AFTER_FIRST_DAILY_MESSAGE: 'after_first_daily_message'
+  AFTER_FIRST_DAILY_MESSAGE: 'after_first_daily_message',
 };
 
 const MESSAGES_STATUSES = {
@@ -116,6 +116,10 @@ const COUPONS_DURATIONS = {
   FOREVER: 'forever',
 };
 
+const LAST_DEFAULT_TRIAL_DAY_HOURS = [...Array(24).keys()].map((i) => i + 24 * 20);
+
+const DISCOUNT_DAY_HOURS = [...Array(24).keys()].map((i) => i + 24 * 13);
+
 module.exports = {
   STRIPE_CONSTANTS,
   USER_TYPES,
@@ -130,4 +134,6 @@ module.exports = {
   REPLY_TEXTS,
   REPLY_COMMANDS,
   COUPONS_DURATIONS,
+  LAST_DEFAULT_TRIAL_DAY_HOURS,
+  DISCOUNT_DAY_HOURS,
 };

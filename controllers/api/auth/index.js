@@ -1,6 +1,12 @@
 const _ = require('lodash');
 const moment = require('moment');
-const { User, Subscription, ResetCurrentCourseToken, Token } = require('../../../models');
+const {
+  User,
+  Subscription,
+  ResetCurrentCourseToken,
+  Token,
+  SubscriptionNotification,
+} = require('../../../models');
 const bcrypt = require('bcryptjs');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
 const {
@@ -209,7 +215,8 @@ const signUp = async (req, res, next) => {
   };
 
   const coupon = body.coupon ? await retrieveCoupon(body.coupon) : null;
-  const isFreeReg = coupon && coupon.duration === COUPONS_DURATIONS.FOREVER && coupon.percent_off === 100;
+  const isFreeReg =
+    coupon && coupon.duration === COUPONS_DURATIONS.FOREVER && coupon.percent_off === 100;
 
   const customer = await stripe.customers.create({
     name: fullName,
@@ -227,27 +234,32 @@ const signUp = async (req, res, next) => {
     trial_end: trialEnd.unix(),
   });
 
-  await Subscription.create({
-    id: subscription.id,
-    user_id: newUser.id,
-    customer: customer.id,
-    coupon: coupon ? coupon.id : null,
-    plan_id: product.id,
-    status: subscription.status,
-    is_free_reg: isFreeReg,
-    next_payment: trialEnd.format('YYYY-MM-DD HH:mm:ss'),
-  });
-
-  const resetToken = await generateResetToken(newUser.id);
+  const [resetToken] = await Promise.all([
+    generateResetToken(newUser.id),
+    Subscription.create({
+      id: subscription.id,
+      user_id: newUser.id,
+      customer: customer.id,
+      coupon: coupon ? coupon.id : null,
+      plan_id: product.id,
+      status: subscription.status,
+      is_free_reg: isFreeReg,
+      next_payment: trialEnd.format('YYYY-MM-DD HH:mm:ss'),
+    }),
+    SubscriptionNotification.create({
+      user_id: newUser.id,
+    }),
+  ]);
   await ResetCurrentCourseToken.create({
     user_id: newUser.id,
     token: resetToken,
     attempts_left: 3,
     expiry: trialEnd.format('YYYY-MM-DD HH:mm:ss'),
   });
-
-  const token = await generateToken(newUser);
-  const user = await userToFront(newUser.id);
+  const [token, user] = await Promise.all([
+    generateToken(newUser),
+    userToFront(newUser.id),
+  ]);
 
   const response = {
     user,

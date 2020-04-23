@@ -96,9 +96,8 @@ const sendFirstDailySms = async () => {
       ]);
 
       const diff = moment().diff(moment(userGuide.created_at), 'minutes');
-      console.log('DIFF');
-      console.log(diff);
-      if (diff !== 3) {
+
+      if (diff !== 5) {
         return;
       }
       const message = await sendDailyText(user, guideDay, 1, guide, userGuide);

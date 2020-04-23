@@ -11,7 +11,9 @@ const tableNames = [
   'Token',
   'ResetCurrentCourseToken',
   'Message',
-  'ShortUrl'
+  'ShortUrl',
+  'SubscriptionNotification'
+
 ];
 module.exports = {
   up: async function(queryInterface, Sequelize) {
