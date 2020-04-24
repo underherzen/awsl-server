@@ -236,6 +236,7 @@ const dailyText = async () => {
 
 const sendDiscountSms = async () => {
   const timezones = getTimezones(15);
+  console.log('RUNNING SEND DISCOUNT SMS FOR TIMEZONES ', timezones);
 
   const subscriptions = await Subscription.findAll({
     where: {
@@ -249,16 +250,22 @@ const sendDiscountSms = async () => {
     },
   });
 
+  // console.log(subscriptions)
+
+
+
   await Promise.all(
     subscriptions.map(async (subscription) => {
       const user = await User.findByPk(subscription.user_id);
 
       if (!timezones.includes(user.timezone) || !user.guide_id || !user.can_receive_texts) {
+        console.log(true)
         return;
       }
 
-      const diff = moment().diff(moment(user.start_day), 'd');
-      if (diff !== 14) {
+      const diff = moment(subscription.next_payment).diff(moment(), 'd');
+      console.log(diff)
+      if (diff !== 6) {
         return;
       }
 
@@ -275,7 +282,7 @@ const sendDiscountSms = async () => {
 
       const guideUrl = `${process.env.BASE_URL}/guides/${guide.url_safe_name}/day-${userGuide.day}/`;
       const shortUrl = await shortener.createShort(
-        `${process.env.BASE_URL}?redirect_url=${guideUrl}&uts=${smsAuthToken}&ui=${user.id}&show_discount_modal=true`,
+        `${process.env.BASE_URL}?show_discount_modal=true&redirect_url=${guideUrl}&uts=${smsAuthToken}&ui=${user.id}`,
         user.id
       );
 

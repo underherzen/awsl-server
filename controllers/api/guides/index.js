@@ -5,15 +5,7 @@ const moment = require('moment');
 const { Op } = require('sequelize');
 const { retrieveToken } = require('../../../modules/api/auth');
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-const {
-  UserGuide,
-  User,
-  UserGuideDay,
-  Guide,
-  GuideDay,
-  ResetCurrentCourseToken,
-  Message,
-} = require('../../../models');
+const { UserGuide, User, UserGuideDay, Guide, GuideDay, ResetCurrentCourseToken, Message } = require('../../../models');
 const { MESSAGES_TYPES } = require('../../../constants');
 const _ = require('lodash');
 
@@ -284,6 +276,30 @@ const resetGuide = async (req, res, next) => {
 
   user = await userToFront(user.id);
   res.send({ user });
+};
+
+const selectPrevious = async (req, res, next) => {
+  let user = req.user;
+  const body = req.body;
+
+  if (!body.guide_id) {
+    res.status(400).send({ error: 'Guide id is required' });
+    return;
+  }
+
+  const userGuide = await UserGuide.findOne({
+    where: {
+      guide_id: body.guide_id,
+      user_id: user.id,
+    },
+  });
+
+  if (!userGuide) {
+    res.status(400).send({ error: "It's not your previous guide!" });
+    return;
+  }
+
+  // destroy all previous
 };
 
 module.exports = {
