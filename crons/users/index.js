@@ -31,14 +31,7 @@ const checkUserStartDay = async () => {
       if (subscription.status !== STRIPE_STATUSES.TRIALING) {
         return;
       }
-      return User.update(
-        {
-          is_active: true,
-        },
-        {
-          where: { id: user.id },
-        }
-      );
+      return User.update({ is_active: true }, { where: { id: user.id } });
     })
   );
 };
@@ -47,10 +40,11 @@ const subscriptionNotifications = async () => {
   const subscriptions = await Subscription.findAll({
     where: {
       [Op.or]: [{ status: STRIPE_STATUSES.CANCELED }, { status: STRIPE_STATUSES.TRIALING }],
-      is_free_reg: false,
+      [Op.or]: [{ is_free_reg: null }, { is_free_reg: false }],
       last4: null,
     },
   });
+  // console.log(subscriptions);
   await Promise.all(
     subscriptions.map(async (subscription) => {
       if (subscription.status === STRIPE_STATUSES.CANCELED) {
@@ -68,8 +62,9 @@ const subscriptionNotifications = async () => {
         );
       }
 
-      const diff = moment().diff(moment(subscription.next_payment), 'h');
-      if (LAST_DEFAULT_TRIAL_DAY_HOURS.includes(diff)) {
+      const diff = moment(subscription.next_payment).diff(moment(), 'd');
+      console.log('DIFF', diff);
+      if (diff === 0) {
         return SubscriptionNotification.update(
           {
             discount_modal: false,
@@ -82,7 +77,7 @@ const subscriptionNotifications = async () => {
             },
           }
         );
-      } else if (DISCOUNT_DAY_HOURS.includes(diff)) {
+      } else if (diff === 7) {
         return SubscriptionNotification.update(
           {
             discount_modal: true,
@@ -114,4 +109,5 @@ const subscriptionNotifications = async () => {
 
 module.exports = {
   checkUserStartDay,
+  subscriptionNotifications,
 };

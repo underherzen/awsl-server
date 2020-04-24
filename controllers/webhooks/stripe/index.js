@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const moment = require('moment');
-const { Subscription, User, ResetCurrentCourseToken } = require('../../../models');
-const { ACTIVE_STATUSES, INACTIVE_STATUSES } = require('./../../../constants');
+const { Subscription, User, ResetCurrentCourseToken, SubscriptionNotification } = require('../../../models');
+const { ACTIVE_STATUSES, INACTIVE_STATUSES, COUPONS_DURATIONS } = require('./../../../constants');
 
 const subscriptionUpdateWebhook = async (req, res, next) => {
   const body = req.body;
@@ -19,35 +19,58 @@ const subscriptionUpdateWebhook = async (req, res, next) => {
     return;
   }
 
-  const couponId = _.get(subscriptionObj, 'discount.coupon.id', null);
+  const coupon = _.get(subscriptionObj, 'discount.coupon', null);
+  let isFreeReg = false;
+  if (coupon && coupon.duration === COUPONS_DURATIONS.FOREVER && coupon.percent_off === 100) {
+    isFreeReg = true;
+  }
+  const couponId = coupon ? coupon.id : null;
 
   // this is when subscription period is changed
-  const diff = moment(subscriptionObj.current_period_end * 1000).diff(
-    moment(subscription.next_payment),
-    'h'
-  );
-  if (diff > 5) {
-    await ResetCurrentCourseToken(
+
+  const promises = [
+    Subscription.update(
       {
-        attempts_left: 3,
-        expiry: moment(subscriptionObj.current_period_end * 1000).format('YYYY-MM-DD HH:mm:ss'),
+        status: subscriptionObj.status,
+        next_payment: moment(subscriptionObj.current_period_end * 1000).format('YYYY-MM-DD HH:mm:ss'),
+        plan_id: subscriptionObj.plan.id,
+        coupon: couponId,
+        cancel_at_period_end: subscriptionObj.cancel_at_period_end,
+        is_free_reg: isFreeReg,
       },
-      {
-        where: { user_id: subscription.user_id },
-      }
+      { where: { id: subscription.id } }
+    ),
+  ];
+
+  const diff = moment(subscriptionObj.current_period_end * 1000).diff(moment(subscription.next_payment), 'h');
+  if (diff > 5) {
+    promises.push(
+      ResetCurrentCourseToken.update(
+        {
+          attempts_left: 3,
+          expiry: moment(subscriptionObj.current_period_end * 1000).format('YYYY-MM-DD HH:mm:ss'),
+        },
+        {
+          where: { user_id: subscription.user_id },
+        }
+      )
     );
   }
 
-  await Subscription.update(
-    {
-      status: subscriptionObj.status,
-      next_payment: moment(subscriptionObj.current_period_end * 1000).format('YYYY-MM-DD HH:mm:ss'),
-      plan_id: subscriptionObj.plan.id,
-      coupon: couponId,
-      cancel_at_period_end: subscriptionObj.cancel_at_period_end,
-    },
-    { where: { id: subscription.id } }
-  );
+  if (isFreeReg) {
+    promises.push(
+      SubscriptionNotification.update(
+        {
+          discount_modal: false,
+          end_of_subscription: false,
+          last_trial_day: false,
+        },
+        { where: { user_id: subscription.user_id } }
+      )
+    );
+  }
+
+  await Promise.all(promises);
 
   if (ACTIVE_STATUSES.includes(subscriptionObj.status)) {
     await User.update({ is_active: true }, { where: { id: subscription.user_id } });

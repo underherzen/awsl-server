@@ -11,9 +11,9 @@ let count = 2;
 while (count < dayToAssign) {
   promises.push(
     UserGuideDay.create({
-      user_id: 2,
+      user_id: 10,
       day: count,
-      guide_id: 8
+      guide_id: 6
     })
   )
   count += 1
@@ -22,7 +22,7 @@ promises.push(UserGuide.update({
   day: dayToAssign
 }, {
   where: {
-    user_id: 2
+    user_id: 10
   }
 }))
 Promise.all(promises).catch(e => console.log(e))

@@ -116,9 +116,12 @@ const COUPONS_DURATIONS = {
   FOREVER: 'forever',
 };
 
-const LAST_DEFAULT_TRIAL_DAY_HOURS = [...Array(24).keys()].map((i) => i + 24 * 20);
+const DISCOUNT_DAY = 14;
+const LAST_TRIAL_DAY = STRIPE_CONSTANTS.trialDays;
 
-const DISCOUNT_DAY_HOURS = [...Array(24).keys()].map((i) => i + 24 * 13);
+const LAST_DEFAULT_TRIAL_DAY_HOURS = [...Array(24).keys()].map((i) => i + 24 * LAST_TRIAL_DAY);
+
+const DISCOUNT_DAY_HOURS = [...Array(24).keys()].map((i) => i + 24 * DISCOUNT_DAY);
 
 module.exports = {
   STRIPE_CONSTANTS,

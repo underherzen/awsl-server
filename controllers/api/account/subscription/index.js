@@ -1,6 +1,6 @@
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
-const { User, Subscription } = require('../../../../models');
-const { STRIPE_STATUSES, STRIPE_CONSTANTS } = require('../../../../constants');
+const { User, Subscription, SubscriptionNotification } = require('../../../../models');
+const { STRIPE_STATUSES, STRIPE_CONSTANTS, COUPONS_DURATIONS } = require('../../../../constants');
 const { userToFront } = require('../../../../modules/helpers');
 const { retrieveCoupon } = require('../../../../modules/stripe');
 const moment = require('moment');
@@ -15,20 +15,24 @@ const moment = require('moment');
  * @returns {Promise<void>}
  */
 const pauseSubscription = async (req, res, next) => {
-  let user = req.user;
-  const subscription = req.subscription;
+  try {
+    let user = req.user;
+    const subscription = req.subscription;
 
-  await stripe.subscriptions.update(subscription.id, {
-    cancel_at_period_end: true,
-  });
-  // and then change db record for returning to user
-  await Subscription.update(
-    { status: STRIPE_STATUSES.PAUSED, cancel_at_period_end: true },
-    { where: { id: subscription.id } }
-  );
+    await stripe.subscriptions.update(subscription.id, {
+      cancel_at_period_end: true,
+    });
+    // and then change db record for returning to user
+    await Subscription.update(
+      { status: STRIPE_STATUSES.PAUSED, cancel_at_period_end: true },
+      { where: { id: subscription.id } }
+    );
 
-  user = await userToFront(user.id);
-  res.send({ user });
+    user = await userToFront(user.id);
+    res.send({ user });
+  } catch (e) {
+    next(e);
+  }
 };
 
 const resetSubscription = async (req, res, next) => {
@@ -119,7 +123,19 @@ const changePaymentMethod = async (req, res, next) => {
     const source = await stripe.customers.createSource(subscription.customer, {
       source: body.stripe_token,
     });
-    await Subscription.update({ last4: source.last4 }, { where: { id: subscription.id } });
+    await Promise.all([
+      Subscription.update({ last4: source.last4 }, { where: { id: subscription.id } }),
+      SubscriptionNotification.update(
+        {
+          discount_modal: false,
+          end_of_subscription: false,
+          last_trial_day: false,
+        },
+        {
+          where: { user_id: user.id },
+        }
+      ),
+    ]);
   } catch (e) {
     console.log(e);
     res.status(400).send({ error: 'Something went wrong' });
@@ -130,18 +146,22 @@ const changePaymentMethod = async (req, res, next) => {
 };
 
 const remindAboutSubscriptionEnd = async (req, res, next) => {
-  const user = req.user;
-  await User.update(
-    {
-      remind_about_sub_end: true,
-    },
-    {
-      where: {
-        id: user.id,
+  try {
+    const user = req.user;
+    await User.update(
+      {
+        remind_about_sub_end: true,
       },
-    }
-  );
-  res.status(200).send({ message: 'You will be reminded' });
+      {
+        where: {
+          id: user.id,
+        },
+      }
+    );
+    res.status(200).send({ message: 'You will be reminded' });
+  } catch (e) {
+    next(e);
+  }
 };
 
 const changeToDiscountPlan = async (req, res, next) => {
@@ -155,24 +175,29 @@ const changeToDiscountPlan = async (req, res, next) => {
     if (body.coupon) {
       const coupon = await retrieveCoupon(body.coupon);
       if (coupon) {
-        params.coupon = coupon;
+        params.coupon = coupon.id;
+        params.trial_end = moment().unix(); //update trial_end 1 more time to be sure stripe gets it
       }
     }
     const subscriptionObj = await stripe.subscriptions.update(subscription.id, params);
-    await Subscription.update({
-      plan: STRIPE_CONSTANTS.plans.annual_79,
-      next_payment: moment(subscriptionObj.current_period_end * 1000).format('YYYY-MM-DD HH:mm:ss'),
-    });
+    await Subscription.update(
+      {
+        plan: STRIPE_CONSTANTS.plans.annual_79,
+        next_payment: moment(subscriptionObj.current_period_end * 1000).format('YYYY-MM-DD HH:mm:ss'),
+      },
+      { where: { user_id: user.id } }
+    );
     user = await userToFront(user.id);
     res.send({ user });
   } catch (e) {
-    throw e;
+    next(e);
   }
 };
 
 const applyCouponToSubscription = async (req, res, next) => {
   try {
     const { body, subscription } = req;
+    let user = req.user;
     if (!body.coupon) {
       res.status(400).send({ error: 'Coupon must not be empty!' });
       return;
@@ -183,12 +208,26 @@ const applyCouponToSubscription = async (req, res, next) => {
       res.status(400).send({ error: 'Coupon doesnt exist' });
       return;
     }
+    const promises = [stripe.subscriptions.update(subscription.id, { coupon: coupon.id })];
 
-    await stripe.subscriptions.update(subscription.id, { coupon });
+    if (coupon.duration === COUPONS_DURATIONS.FOREVER && coupon.percent_off === 100) {
+      promises.push(
+        SubscriptionNotification.update(
+          {
+            discount_modal: false,
+            end_of_subscription: false,
+            last_trial_day: false,
+          },
+          { where: { user_id: user.id } }
+        ),
+        Subscription.update({ is_free_reg: true }, { where: { user_id: user.id } })
+      );
+    }
+    await Promise.all(promises);
 
     res.sendStatus(200);
   } catch (e) {
-    throw e;
+    next(e);
   }
 };
 
