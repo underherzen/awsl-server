@@ -51,6 +51,7 @@ const MESSAGES_TYPES = {
   REPLY_HELP: 'reply_help',
   DISCOUNT: 'discount',
   AFTER_FIRST_DAILY_MESSAGE: 'after_first_daily_message',
+  ADDITIONAL: 'additional',
 };
 
 const MESSAGES_STATUSES = {

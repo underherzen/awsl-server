@@ -2,6 +2,7 @@ const { User, Subscription } = require('../../../../models');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
 const { toValidPhone } = require('../../../../modules/api/auth');
 const { userToFront } = require('../../../../modules/helpers');
+const { Op } = require('sequelize');
 const changeBio = async (req, res, next) => {
   let user = req.user;
   const body = req.body;
@@ -10,6 +11,17 @@ const changeBio = async (req, res, next) => {
 
   if (!body.phone) {
     res.status(400).send({ error: 'Phone number is invalid' });
+    return;
+  }
+
+  const existingUser = await User.findOne({
+    where: {
+      phone: body.phone,
+    },
+  });
+
+  if (existingUser) {
+    res.status(400).send({ error: 'User with provided phone number already exists' });
     return;
   }
 

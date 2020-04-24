@@ -1,12 +1,4 @@
-const {
-  User,
-  UserGuide,
-  GuideDay,
-  UserGuideDay,
-  Message,
-  Guide,
-  Subscription,
-} = require('../../models');
+const { User, UserGuide, GuideDay, UserGuideDay, Message, Guide, Subscription } = require('../../models');
 const { Op } = require('sequelize');
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const moment = require('moment');
@@ -47,9 +39,7 @@ const sendUndeliveredDailyMessages = async () => {
     const diff = moment().diff(moment(message.updated_at), 'h');
     return diff >= 1;
   });
-  await Promise.all(
-    dailyUndeliveredMessages.map((message) => sendUndeliveredMessage(message, client))
-  );
+  await Promise.all(dailyUndeliveredMessages.map((message) => sendUndeliveredMessage(message, client)));
 };
 
 const sendFirstDailySms = async () => {
@@ -350,13 +340,131 @@ const sendRemindMessages = async () => {
 };
 
 const sendMessageAfterFirstDailyMessage = async () => {
-  const messages = await Message.findAll({
+  let messages = await Message.findAll({
     where: {
-
-    }
-  })
+      type: MESSAGES_TYPES.AFTER_FIRST_DAILY_MESSAGE,
+    },
+  });
+  let userIds = messages.map((m) => m.user_id);
+  messages = await Message.findAll({
+    where: {
+      user_id: {
+        [Op.notIn]: userIds,
+      },
+      type: MESSAGES_TYPES.DAILY,
+    },
+  });
+  userIds = messages
+    .filter((message) => {
+      const count = messages.filter((el) => el.user_id === message.user_id).length;
+      const diff = moment().diff(moment(message.created_at), 'h');
+      return count === 1 && diff === 2;
+    })
+    .map((el) => el.user_id);
+  const users = await User.findAll({
+    where: {
+      id: {
+        [Op.in]: userIds,
+      },
+      can_receive_texts: true,
+      guide_id: {
+        [Op.ne]: null,
+      },
+    },
+  });
+  await Promise.all(
+    users.map(async (user) => {
+      const facebookUrl = 'https://www.facebook.com/groups/goliveitup/';
+      const message = `Hello {0}!! We are so excited to be on this journey with you! When we learn together and show up for one another—that’s where the magic happens. Join the online community and find your group now: ${facebookUrl}`.replace(
+        '{0}',
+        user.first_name
+      );
+      const messageObject = {
+        from: await getTwilioNumber(client, user.phone),
+        body: `${message}`,
+        to: user.phone,
+        statusCallback: `${process.env.API_URL}/webhooks/twilio/status-callback/`,
+        statusCallbackMethod: 'POST',
+      };
+      const response = await sendInternationalSms(client, messageObject);
+      if (response) {
+        await Message.create({
+          user_id: user.id,
+          from: messageObject.from,
+          to: messageObject.to,
+          text_message: messageObject.body,
+          type: MESSAGES_TYPES.AFTER_FIRST_DAILY_MESSAGE,
+          twilio_sms_id: response.sid,
+          status: response.status,
+        });
+      }
+    })
+  );
 };
 
+const sendAdditionalSms = async () => {
+  const timezones = getTimezones(14);
+  console.log('RUNNING SEND ADDITIONAL SMS FOR ', timezones);
+  let messages, users;
+  [messages, users] = await Promise.all([
+    Message.findAll({
+      type: MESSAGES_TYPES.ADDITIONAL,
+    }),
+    User.findAll({
+      where: {
+        timezone: {
+          [Op.in]: timezones,
+        },
+        can_receive_texts: true,
+        guide_id: {
+          [Op.ne]: null,
+        },
+      },
+    }),
+  ]);
+  users = users.filter((user) => {
+    const additionalSmsAlreadySent = messages.find((message) => message.user_id === user.id);
+    return !additionalSmsAlreadySent;
+  });
+  await Promise.all(
+    users.map(async (user) => {
+      try {
+        const userGuide = await UserGuide.findAll({
+          where: {
+            user_id: user.id,
+          },
+        });
+        if (!userGuide || userGuide.length !== 1 || userGuide[0].day !== 3) {
+          return;
+        }
+        const firstName = user.first_name.trim();
+        const messageText = `Hi ${firstName}! Did you know that there’s a 95% chance you’ll complete this course if you have an Accountabilibuddy? So invite a friend, your team, your family to take this journey with you! Use this link to gift them 21 days free: http://goliveitup.com?_from=buddy`;
+
+        const messageObject = {
+          from: await getTwilioNumber(client, user.phone),
+          body: `${messageText}`,
+          to: user.phone,
+          statusCallback: `${process.env.API_URL}/webhooks/twilio/status-callback/`,
+          statusCallbackMethod: 'POST',
+        };
+        const response = await sendInternationalSms(client, messageObject);
+        if (response) {
+          await Message.create({
+            user_id: user.id,
+            from: messageObject.from,
+            to: messageObject.to,
+            text_message: messageObject.body,
+            type: MESSAGES_TYPES.ADDITIONAL,
+            twilio_sms_id: response.sid,
+            status: response.status,
+          });
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    })
+  );
+};
 
 module.exports = {
   dailyText,
@@ -364,4 +472,6 @@ module.exports = {
   sendUndeliveredDailyMessages,
   sendDiscountSms,
   sendRemindMessages,
+  sendMessageAfterFirstDailyMessage,
+  sendAdditionalSms,
 };

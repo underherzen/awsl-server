@@ -7,6 +7,8 @@ const {
   sendUndeliveredDailyMessages,
   sendRemindMessages,
   sendDiscountSms,
+  sendMessageAfterFirstDailyMessage,
+  sendAdditionalSms
 } = require('./crons/messages');
 const { checkUserStartDay, subscriptionNotifications } = require('./crons/users');
 const { CRON_INTERVALS } = require('./constants');
@@ -24,4 +26,8 @@ const { CRON_INTERVALS } = require('./constants');
 // send undelivered messages
 // cron.schedule(CRON_INTERVALS.EVERY10SECONDS, sendUndeliveredDailyMessages);
 
-cron.schedule(CRON_INTERVALS.EVERY4SECONDS, subscriptionNotifications);
+// cron.schedule(CRON_INTERVALS.EVERY4SECONDS, subscriptionNotifications);
+
+// cron.schedule(CRON_INTERVALS.EVERY10SECONDS, sendMessageAfterFirstDailyMessage);
+
+cron.schedule(CRON_INTERVALS.EVERY10SECONDS, sendAdditionalSms);
