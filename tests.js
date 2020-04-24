@@ -4,7 +4,7 @@ const moment = require('moment');
 const {UserGuide, UserGuideDay} = require('./models')
 console.log(process.env.STRIPE_PRIVATE);
 
-let dayToAssign = 21;
+let dayToAssign = 3;
 
 let promises = [];
 let count = 2;
@@ -13,7 +13,7 @@ while (count < dayToAssign) {
     UserGuideDay.create({
       user_id: 10,
       day: count,
-      guide_id: 6
+      guide_id: 5
     })
   )
   count += 1

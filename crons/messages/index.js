@@ -408,7 +408,9 @@ const sendAdditionalSms = async () => {
   let messages, users;
   [messages, users] = await Promise.all([
     Message.findAll({
-      type: MESSAGES_TYPES.ADDITIONAL,
+      where: {
+        type: MESSAGES_TYPES.ADDITIONAL,
+      },
     }),
     User.findAll({
       where: {
