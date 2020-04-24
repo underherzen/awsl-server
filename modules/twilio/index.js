@@ -89,7 +89,7 @@ sendUndeliveredMessage = async (message, client) => {
   }
 };
 
-const sendDailyText = async (user, guideDay, dayToAssign, guide, userGuide) => {
+const sendDailyText = async (user, guideDay, dayToAssign, guide) => {
   try {
     if (dayToAssign === 0) {
       throw 'You can`t send day 0 guides';
@@ -133,7 +133,7 @@ const sendDailyText = async (user, guideDay, dayToAssign, guide, userGuide) => {
         type: MESSAGES_TYPES.DAILY,
         twilio_sms_id: response.sid,
         status: response.status,
-        guide_id: userGuide.guide_id,
+        guide_id: guide.id,
         day: dayToAssign,
       });
       return message;

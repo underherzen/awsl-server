@@ -4,16 +4,16 @@ const moment = require('moment');
 const {UserGuide, UserGuideDay} = require('./models')
 console.log(process.env.STRIPE_PRIVATE);
 
-let dayToAssign = 3;
+let dayToAssign = 21;
 
 let promises = [];
 let count = 2;
 while (count < dayToAssign) {
   promises.push(
     UserGuideDay.create({
-      user_id: 10,
+      user_id: 11,
       day: count,
-      guide_id: 5
+      guide_id: 3
     })
   )
   count += 1
@@ -22,7 +22,7 @@ promises.push(UserGuide.update({
   day: dayToAssign
 }, {
   where: {
-    user_id: 10
+    user_id: 11
   }
 }))
 Promise.all(promises).catch(e => console.log(e))

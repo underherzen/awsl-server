@@ -23,6 +23,6 @@ router.post('/accept-guide-day', guideController.acceptGuideDay);
 
 router.post('/visit-guide-day', guideController.visitGuideDay);
 
-router.post('/select-previous',)
+router.post('/select-previous', guideController.selectPrevious);
 
 module.exports = router;
