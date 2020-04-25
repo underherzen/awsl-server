@@ -124,6 +124,12 @@ const LAST_DEFAULT_TRIAL_DAY_HOURS = [...Array(24).keys()].map((i) => i + 24 * L
 
 const DISCOUNT_DAY_HOURS = [...Array(24).keys()].map((i) => i + 24 * DISCOUNT_DAY);
 
+const ONTRAPORT_HEADERS = {
+  'Api-Appid': process.env.ONTRAPORT_API_APPID,
+  'Api-Key': process.env.ONTRAPORT_API_KEY,
+  'Content-Type': 'application/x-www-form-urlencoded',
+};
+
 module.exports = {
   STRIPE_CONSTANTS,
   USER_TYPES,
@@ -140,4 +146,5 @@ module.exports = {
   COUPONS_DURATIONS,
   LAST_DEFAULT_TRIAL_DAY_HOURS,
   DISCOUNT_DAY_HOURS,
+  ONTRAPORT_HEADERS,
 };

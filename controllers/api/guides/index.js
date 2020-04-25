@@ -149,8 +149,8 @@ const acceptGuideDay = async (req, res, next) => {
     {
       where: {
         user_id: user.id,
-        guide_id: Number(guide_id),
-        day: Number(day_to_accept),
+        guide_id: +guide_id,
+        day: +day_to_accept,
       },
     }
   );
@@ -178,8 +178,8 @@ const visitGuideDay = async (req, res, next) => {
     {
       where: {
         user_id: user.id,
-        guide_id: Number(guide_id),
-        day: Number(day_to_visit),
+        guide_id: +guide_id,
+        day: +day_to_visit,
       },
     }
   );

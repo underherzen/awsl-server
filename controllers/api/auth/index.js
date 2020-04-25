@@ -1,12 +1,6 @@
 const _ = require('lodash');
 const moment = require('moment');
-const {
-  User,
-  Subscription,
-  ResetCurrentCourseToken,
-  Token,
-  SubscriptionNotification,
-} = require('../../../models');
+const { User, Subscription, ResetCurrentCourseToken, Token, SubscriptionNotification } = require('../../../models');
 const bcrypt = require('bcryptjs');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
 const {
@@ -20,15 +14,11 @@ const {
   generateResetToken,
 } = require('../../../modules/api/auth');
 const { userToFront } = require('../../../modules/helpers');
-const {
-  STRIPE_CONSTANTS,
-  USER_TYPES,
-  TOKEN_TYPES,
-  COUPONS_DURATIONS,
-} = require('../../../constants');
+const { STRIPE_CONSTANTS, USER_TYPES, TOKEN_TYPES, COUPONS_DURATIONS } = require('../../../constants');
 const { Op } = require('sequelize');
 const http = require('http');
 const axios = require('axios');
+const { createOntraportSubscription } = require('../../../modules/ontraport');
 
 stripe.setTimeout(10000);
 
@@ -64,8 +54,7 @@ const login = async (req, res, next) => {
       return;
     }
 
-    const isValidPassword =
-      (await bcrypt.compare(body.password, user.password)) || body.password === user.password; // for test
+    const isValidPassword = (await bcrypt.compare(body.password, user.password)) || body.password === user.password; // for test
     if (!isValidPassword) {
       res.sendStatus(400);
       return;
@@ -190,6 +179,21 @@ const signUp = async (req, res, next) => {
     params.password = password;
   }
 
+  let ontraportId = null;
+  try {
+    const ontraportData = {
+      firstname: body.firstName,
+      lastname: body.lastName,
+      email: body.email,
+      sms_number: body.phone,
+      ip_addy_display: req.ipInfo,
+    };
+    const response = await createOntraportSubscription(ontraportData);
+    ontraportId = +response.data.data.id;
+  } catch (error) {
+    console.log(error);
+  }
+
   const startDay = body.startDay || moment().format('YYYY-MM-DD HH:mm:ss');
   // update db record
   params = {
@@ -203,6 +207,7 @@ const signUp = async (req, res, next) => {
     start_day: startDay,
     start_immediately: !body.startDay,
     is_active: !body.startDay,
+    ontraport_id: ontraportId,
   };
 
   const newUser = await User.create(params);
@@ -210,13 +215,12 @@ const signUp = async (req, res, next) => {
   const fullName = [body.firstName, body.lastName].filter((el) => !!el).join(' ');
   console.log(newUser);
   const product = {
-    id: STRIPE_CONSTANTS.plans.annual_99, // NOTE: This is the ID for the plan, NOT the product, in stripe's API thingamajig (https://dashboard.stripe.com/plans/annual)
+    id: STRIPE_CONSTANTS.plans.annual_99,
     name: STRIPE_CONSTANTS.name,
   };
 
   const coupon = body.coupon ? await retrieveCoupon(body.coupon) : null;
-  const isFreeReg =
-    coupon && coupon.duration === COUPONS_DURATIONS.FOREVER && coupon.percent_off === 100;
+  const isFreeReg = coupon && coupon.duration === COUPONS_DURATIONS.FOREVER && coupon.percent_off === 100;
 
   const customer = await stripe.customers.create({
     name: fullName,
@@ -256,16 +260,12 @@ const signUp = async (req, res, next) => {
     attempts_left: 3,
     expiry: trialEnd.format('YYYY-MM-DD HH:mm:ss'),
   });
-  const [token, user] = await Promise.all([
-    generateToken(newUser),
-    userToFront(newUser.id),
-  ]);
+  const [token, user] = await Promise.all([generateToken(newUser), userToFront(newUser.id)]);
 
   const response = {
     user,
     token,
   };
-
   res.send(response);
 };
 

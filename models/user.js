@@ -54,6 +54,11 @@ module.exports = (sequelize, DataTypes) => {
         unique: true,
         type: DataTypes.STRING(100),
       },
+      ontraport_id: {
+        allowNull: true,
+        unique: true,
+        type: DataTypes.INTEGER,
+      },
       start_day: {
         allowNull: false,
         type: DataTypes.DATE,
