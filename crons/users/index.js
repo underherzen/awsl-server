@@ -77,7 +77,7 @@ const subscriptionNotifications = async () => {
             },
           }
         );
-      } else if (diff === 6) {
+      } else if (diff === 7) {
         return SubscriptionNotification.update(
           {
             discount_modal: true,

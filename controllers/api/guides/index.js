@@ -95,7 +95,7 @@ const selectGuide = async (req, res, next) => {
         },
       }),
     ]);
-    const message = await sendDailyText(user, guideDay, 1, guide, userGuide);
+    const message = await sendDailyText(user, guideDay, 1, guide);
     if (message) {
       await UserGuideDay.update(
         {
@@ -299,7 +299,73 @@ const selectPrevious = async (req, res, next) => {
     return;
   }
 
-  // destroy all previous
+  // destroy all previous && find 1 day and other stuff
+  const [guideDay, guide] = await Promise.all([
+    GuideDay.findOne({
+      where: {
+        day: 1,
+        guide_id: body.guide_id,
+      },
+    }),
+    Guide.findByPk(body.guide_id),
+    UserGuide.update(
+      {
+        day: 1,
+        completed: false,
+      },
+      {
+        where: {
+          user_id: user.id,
+          guide_id: body.guide_id,
+        },
+      }
+    ),
+    UserGuideDay.destroy({
+      where: {
+        user_id: user.id,
+        guide_id: body.guide_id,
+      },
+    }),
+  ]);
+  const promises = [
+    sendDailyText(user, guideDay, 1, guide),
+    UserGuideDay.create({
+      day: 0,
+      user_id: user.id,
+      guide_id: body.guide_id,
+    }),
+    UserGuideDay.create({
+      day: 1,
+      user_id: user.id,
+      guide_id: body.guide_id,
+    }),
+    User.update(
+      {
+        guide_id: body.guide_id,
+      },
+      {
+        where: {
+          id: user.id,
+        },
+      }
+    ),
+  ];
+  const [message] = await Promise.all(promises);
+  if (message) {
+    await UserGuideDay.update(
+      { message_id: message.id },
+      {
+        where: {
+          day: 1,
+          guide_id: guide.id,
+          user_id: user.id,
+        },
+      }
+    );
+  }
+  user = await userToFront(user.id);
+  const redirect = `/guides/${guide.url_safe_name}/intro/`;
+  res.send({ user, redirect });
 };
 
 module.exports = {
@@ -310,4 +376,5 @@ module.exports = {
   resetGuide,
   acceptGuideDay,
   visitGuideDay,
+  selectPrevious,
 };

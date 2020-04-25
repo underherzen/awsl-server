@@ -90,7 +90,7 @@ const sendFirstDailySms = async () => {
       if (diff !== 5) {
         return;
       }
-      const message = await sendDailyText(user, guideDay, 1, guide, userGuide);
+      const message = await sendDailyText(user, guideDay, 1, guide);
       console.log(message);
       if (message) {
         await UserGuideDay.update(
@@ -166,7 +166,7 @@ const dailyText = async () => {
         const guideDay = await GuideDay.findOne({
           where: { day: 22, guide_id: userGuide.guide_id },
         });
-        const message = await sendDailyText(user, guideDay, 22, guide, userGuide);
+        const message = await sendDailyText(user, guideDay, 22, guide);
         await UserGuideDay.create({
           user_id: user.id,
           guide_id: userGuide.guide_id,
@@ -205,7 +205,7 @@ const dailyText = async () => {
           },
         });
 
-        const message = await sendDailyText(user, guideDay, dayToAssign, guide, userGuide);
+        const message = await sendDailyText(user, guideDay, dayToAssign, guide);
 
         dbPromises.push(
           UserGuideDay.create({
