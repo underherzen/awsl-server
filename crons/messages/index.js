@@ -87,10 +87,10 @@ const sendFirstDailySms = async () => {
 
       const diff = moment().diff(moment(userGuide.created_at), 'minutes');
 
-      if (diff !== 5) {
+      if (diff < 0) {
         return;
       }
-      const message = await sendDailyText(user, guideDay, 1, guide);
+      const message = await sendDailyText(user, guideDay, 1, guide, true);
       console.log(message);
       if (message) {
         await UserGuideDay.update(
@@ -129,7 +129,7 @@ const dailyText = async () => {
   console.log('FOUND USERS TO DAILY TEXT', users.length);
   await Promise.all(
     users.map(async (user) => {
-      const [userGuide, guide] = await Promise.all([
+      const [userGuide, guide, allUserGuides] = await Promise.all([
         UserGuide.findOne({
           where: {
             guide_id: user.guide_id,
@@ -137,7 +137,13 @@ const dailyText = async () => {
           },
         }),
         Guide.findByPk(user.guide_id),
+        UserGuide.findAndCountAll({
+          where: {
+            user_id: user.id,
+          },
+        }),
       ]);
+
       /*
     IF IT IS THE LAST DAY
      */
@@ -179,6 +185,7 @@ const dailyText = async () => {
       /*
     END OF LAST DAY LOGIC
      */
+      const isFirstDailyText = allUserGuides.count === 1 && userGuide.day + 1 === 1;
 
       let dayToAssign = userGuide.day + 1;
       // prevent from over going just in case
@@ -205,7 +212,7 @@ const dailyText = async () => {
           },
         });
 
-        const message = await sendDailyText(user, guideDay, dayToAssign, guide);
+        const message = await sendDailyText(user, guideDay, dayToAssign, guide, isFirstDailyText);
 
         dbPromises.push(
           UserGuideDay.create({
@@ -252,19 +259,17 @@ const sendDiscountSms = async () => {
 
   // console.log(subscriptions)
 
-
-
   await Promise.all(
     subscriptions.map(async (subscription) => {
       const user = await User.findByPk(subscription.user_id);
 
       if (!timezones.includes(user.timezone) || !user.guide_id || !user.can_receive_texts) {
-        console.log(true)
+        console.log(true);
         return;
       }
 
       const diff = moment(subscription.next_payment).diff(moment(), 'd');
-      console.log(diff)
+      console.log(diff);
       if (diff !== 6) {
         return;
       }

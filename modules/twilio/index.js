@@ -89,7 +89,7 @@ sendUndeliveredMessage = async (message, client) => {
   }
 };
 
-const sendDailyText = async (user, guideDay, dayToAssign, guide) => {
+const sendDailyText = async (user, guideDay, dayToAssign, guide, firstDailyText = false) => {
   try {
     if (dayToAssign === 0) {
       throw 'You can`t send day 0 guides';
@@ -103,10 +103,10 @@ const sendDailyText = async (user, guideDay, dayToAssign, guide) => {
     const imageIsExisting = await imageExists(imageQuoteUrl);
 
     const smsAuthToken = await generateSmsAuthToken(user.id);
-
+    const firstDailyTextTracker = firstDailyText ? '?first_daily_text=true' : '';
     const guideUrl =
       dayToAssign !== 22
-        ? `${process.env.BASE_URL}/guides/${guide.url_safe_name}/day-${dayToAssign}/`
+        ? `${process.env.BASE_URL}/guides/${guide.url_safe_name}/day-${dayToAssign}/${firstDailyTextTracker}`
         : `${process.env.BASE_URL}/guides/`;
     const messageUrl = await shortener.createShort(
       `${process.env.BASE_URL}?redirect_url=${guideUrl}&uts=${smsAuthToken}&ui=${user.id}&${trackingParams}`,

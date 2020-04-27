@@ -207,6 +207,7 @@ const getGuideDaysForSlider = async (req, res, next) => {
         [Op.lt]: 22,
       },
     },
+    order: [['day', 'ASC']],
   });
 
   if (!guideDays) {
