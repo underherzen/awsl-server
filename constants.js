@@ -82,6 +82,7 @@ const CRON_INTERVALS = {
   EVERYDAYAT7AMUTC: '0 7 * * *',
   EVERYDAYAT10AMUTC: '0 10 * * *',
   EVERYDAYAT1AMUTC: '0 1 * * *',
+  EVERY5MINUTES: '*/5 * * * *',
 };
 
 const REPLY_TEXTS = {
