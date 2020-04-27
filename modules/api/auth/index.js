@@ -95,6 +95,7 @@ const fbCheckToken = async (token) => {
     }
     return response;
   } catch (e) {
+    console.log(e);
     return null;
   }
 };

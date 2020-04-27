@@ -16,20 +16,22 @@ const { CRON_INTERVALS } = require('./constants');
 //schedule tasks
 
 // daily 6am updates and sms
-// cron.schedule(CRON_INTERVALS.EVERY10SECONDS, dailyText);
+cron.schedule(CRON_INTERVALS.EVERY5MINUTES, dailyText);
 // check users with startDay
-// cron.schedule(CRON_INTERVALS.EVERY4SECONDS, checkUserStartDay);
+cron.schedule(CRON_INTERVALS.EVERY1HOUR, checkUserStartDay);
 
 // other messages
-// cron.schedule(CRON_INTERVALS.EVERY4SECONDS, sendFirstDailySms);
+cron.schedule(CRON_INTERVALS.EVERY5MINUTES, sendFirstDailySms);
 
 // send undelivered messages
-// cron.schedule(CRON_INTERVALS.EVERY10MINUTES, sendUndeliveredDailyMessages);
+cron.schedule(CRON_INTERVALS.EVERY1HOUR, sendUndeliveredDailyMessages);
 
-cron.schedule(CRON_INTERVALS.EVERY4SECONDS, subscriptionNotifications);
+cron.schedule(CRON_INTERVALS.EVERY1HOUR, subscriptionNotifications);
 
-// cron.schedule(CRON_INTERVALS.EVERY10SECONDS, sendMessageAfterFirstDailyMessage);
+cron.schedule(CRON_INTERVALS.EVERY5MINUTES, sendMessageAfterFirstDailyMessage);
 
-// cron.schedule(CRON_INTERVALS.EVERY10SECONDS, sendAdditionalSms);
+cron.schedule(CRON_INTERVALS.EVERY5MINUTES, sendAdditionalSms);
 
-// cron.schedule(CRON_INTERVALS.EVERY10SECONDS, sendDiscountSms);
+cron.schedule(CRON_INTERVALS.EVERY5MINUTES, sendDiscountSms);
+
+cron.schedule(CRON_INTERVALS.EVERY5MINUTES, sendRemindMessages);
