@@ -87,7 +87,7 @@ const sendFirstDailySms = async () => {
 
       const diff = moment().diff(moment(userGuide.created_at), 'minutes');
 
-      if (diff < 0) {
+      if (diff < 5) {
         return;
       }
       const message = await sendDailyText(user, guideDay, 1, guide, true);
@@ -350,7 +350,10 @@ const sendRemindMessages = async () => {
     })
   );
 };
-
+/**
+ * Sends first daily sms in 5 minutes for users who just has selected its first guide and started immediately
+ * @returns {Promise<void>}
+ */
 const sendMessageAfterFirstDailyMessage = async () => {
   let messages = await Message.findAll({
     where: {
@@ -370,6 +373,7 @@ const sendMessageAfterFirstDailyMessage = async () => {
     .filter((message) => {
       const count = messages.filter((el) => el.user_id === message.user_id).length;
       const diff = moment().diff(moment(message.created_at), 'h');
+      console.log(diff)
       return count === 1 && diff === 2;
     })
     .map((el) => el.user_id);
@@ -414,6 +418,10 @@ const sendMessageAfterFirstDailyMessage = async () => {
   );
 };
 
+/**
+ * sends additional sms for users who was only 1 guide and is on 3rd day
+ * @returns {Promise<void>}
+ */
 const sendAdditionalSms = async () => {
   const timezones = getTimezones(14);
   console.log('RUNNING SEND ADDITIONAL SMS FOR ', timezones);
