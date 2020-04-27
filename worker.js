@@ -16,20 +16,20 @@ const { CRON_INTERVALS } = require('./constants');
 //schedule tasks
 
 // daily 6am updates and sms
-cron.schedule(CRON_INTERVALS.EVERY10SECONDS, dailyText);
+// cron.schedule(CRON_INTERVALS.EVERY10SECONDS, dailyText);
 // check users with startDay
-// cron.schedule(CRON_INTERVALS.EVERYMINUTE, checkUserStartDay);
+// cron.schedule(CRON_INTERVALS.EVERY4SECONDS, checkUserStartDay);
 
 // other messages
-// cron.schedule(CRON_INTERVALS.EVERYMINUTE, sendFirstDailySms);
+// cron.schedule(CRON_INTERVALS.EVERY4SECONDS, sendFirstDailySms);
 
 // send undelivered messages
 // cron.schedule(CRON_INTERVALS.EVERY10MINUTES, sendUndeliveredDailyMessages);
 
-// cron.schedule(CRON_INTERVALS.EVERY5MINUTES, subscriptionNotifications);
+cron.schedule(CRON_INTERVALS.EVERY4SECONDS, subscriptionNotifications);
 
 // cron.schedule(CRON_INTERVALS.EVERY10SECONDS, sendMessageAfterFirstDailyMessage);
 
 // cron.schedule(CRON_INTERVALS.EVERY10SECONDS, sendAdditionalSms);
 
-// cron.schedule(CRON_INTERVALS.EVERY5MINUTES, sendDiscountSms);
+// cron.schedule(CRON_INTERVALS.EVERY10SECONDS, sendDiscountSms);

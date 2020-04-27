@@ -61,19 +61,31 @@ const resetSubscription = async (req, res, next) => {
       items: [{ plan: product.id }],
       coupon: coupon ? coupon.id : '',
     });
-
-    await Subscription.update(
-      {
-        id: newSubscription.id,
-        status: newSubscription.status,
-        cancel_at_period_end: newSubscription.cancel_at_period_end,
-      },
-      {
-        where: {
-          id: subscription.id,
+    const promises = [
+      Subscription.update(
+        {
+          id: newSubscription.id,
+          status: newSubscription.status,
+          cancel_at_period_end: newSubscription.cancel_at_period_end,
         },
-      }
-    );
+        {
+          where: {
+            id: subscription.id,
+          },
+        }
+      ),
+      User.update(
+        {
+          is_active: true,
+        },
+        {
+          where: {
+            id: user.id,
+          },
+        }
+      ),
+    ];
+    await Promise.all(promises);
     user = await userToFront(user.id);
     res.send({ user });
     return;

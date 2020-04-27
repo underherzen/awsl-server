@@ -110,6 +110,20 @@ const customerUpdateWebhook = async (req, res, next) => {
     ),
   ];
   const last4 = _.get(sources, 'data[0].last4', null);
+  if (last4) {
+    promises.push(
+      User.update(
+        {
+          is_active: true,
+        },
+        {
+          where: {
+            id: subscription.user_id,
+          },
+        }
+      )
+    );
+  }
   promises.push(Subscription.update({ last4 }, { where: { id: subscription.id } }));
   try {
     await Promise.all(promises);
