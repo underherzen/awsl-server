@@ -329,7 +329,6 @@ const selectPrevious = async (req, res, next) => {
     }),
   ]);
   const promises = [
-    sendDailyText(user, guideDay, 1, guide),
     UserGuideDay.create({
       day: 0,
       user_id: user.id,
@@ -351,19 +350,23 @@ const selectPrevious = async (req, res, next) => {
       }
     ),
   ];
-  const [message] = await Promise.all(promises);
-  if (message) {
-    await UserGuideDay.update(
-      { message_id: message.id },
-      {
-        where: {
-          day: 1,
-          guide_id: guide.id,
-          user_id: user.id,
-        },
-      }
-    );
+  if (user.can_receive_texts) {
+    const message = await sendDailyText(user, guideDay, 1, guide);
+    if (message) {
+      await UserGuideDay.update(
+        { message_id: message.id },
+        {
+          where: {
+            day: 1,
+            guide_id: guide.id,
+            user_id: user.id,
+          },
+        }
+      );
+    }
   }
+  await Promise.all(promises);
+
   user = await userToFront(user.id);
   const redirect = `/guides/${guide.url_safe_name}/intro/`;
   res.send({ user, redirect });
