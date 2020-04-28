@@ -8,8 +8,8 @@ router.post('/sign_up', authController.signUp);
 
 router.get('/whoami', authController.whoami);
 
-router.get('/user-lookup', authController.userLookup);
+router.get('/user_lookup', authController.userLookup);
 
-router.post('/auth-by-sms', authController.authBySmsToken);
+router.post('/auth_by_sms', authController.authBySmsToken);
 
 module.exports = router;

@@ -3,11 +3,11 @@ const router = express.Router();
 const subscriptionController = require('../../../../controllers/api/account/subscription');
 const { retrieveAndUpdateUserSubscription } = require('../../../../controllers');
 
-router.post('/pause-subscription', subscriptionController.pauseSubscription);
+router.post('/pause_subscription', subscriptionController.pauseSubscription);
 
-router.post('/reset-subscription', subscriptionController.resetSubscription);
+router.post('/reset_subscription', subscriptionController.resetSubscription);
 
-router.post('/change-payment-method', subscriptionController.changePaymentMethod);
+router.post('/change_payment_method', subscriptionController.changePaymentMethod);
 
 router.post('/remind_about_subscription_end', subscriptionController.remindAboutSubscriptionEnd);
 
