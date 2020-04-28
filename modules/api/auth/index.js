@@ -88,12 +88,11 @@ const googleCheckToken = async (token) => {
 
 const fbCheckToken = async (token) => {
   try {
-    const fields = ['first_name', 'last_name', 'email'].join(',')
+    const fields = ['first_name', 'last_name', 'email'].join(',');
     const url = `https://graph.facebook.com/me?access_token=${token}&fields=${fields}`;
-    console.log(url)
     const response = await axios.get(url);
     console.log(response.data)
-    if (!response.data || !response.data.is_valid || !response.data.user_id) {
+    if (!response.data || !response.data.id) {
       return null;
     }
     return response;

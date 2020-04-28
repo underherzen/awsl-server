@@ -273,9 +273,17 @@ const signUp = async (req, res, next) => {
     next(e);
   }
 };
-
+/**
+ * check if user already exists
+ * if facebookId is provided get required fields and return them
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<void>}
+ */
 const userLookup = async (req, res, next) => {
   const body = req.query;
+  console.log(body);
   const params = {};
   if (body.email) {
     params.email = body.email;
@@ -293,6 +301,22 @@ const userLookup = async (req, res, next) => {
   if (existingUser) {
     res.sendStatus(400);
     return;
+  }
+  if (body.facebookID && body.accessToken) {
+    try {
+      const fields = ['first_name', 'last_name', 'email'].join(',');
+      const url = `https://graph.facebook.com/me?access_token=${body.accessToken}&fields=${fields}`;
+      const { data: response } = await axios.get(url);
+      console.log(response);
+      if (response.first_name || response.last_name || response.email || response.id) {
+        res.send({ response });
+        return;
+      }
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(200);
+      return
+    }
   }
   res.sendStatus(204);
 };
