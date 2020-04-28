@@ -162,12 +162,13 @@ const signUp = async (req, res, next) => {
     });
 
     if (existingUser) {
-      if (existingUser.email === body.email) {
+      if (existingUser.email === body.email && !!body.email) {
         res.status(400).send({ error: 'User with same email already exists' });
+        return;
       } else if (existingUser.phone === body.phone) {
         res.status(400).send({ error: 'User with same phone already exists' });
+        return;
       }
-      return;
     }
 
     // if not social and not password => exit

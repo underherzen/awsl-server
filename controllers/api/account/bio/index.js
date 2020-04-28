@@ -16,6 +16,9 @@ const changeBio = async (req, res, next) => {
 
   const existingUser = await User.findOne({
     where: {
+      id: {
+        [Op.ne]: user.id,
+      },
       phone: body.phone,
     },
   });

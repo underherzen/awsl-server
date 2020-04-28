@@ -88,14 +88,17 @@ const googleCheckToken = async (token) => {
 
 const fbCheckToken = async (token) => {
   try {
-    const url = `https://graph.facebook.com/debug_token?input_token=${token}&access_token=${process.env.FB_SECRET}`;
+    const fields = ['first_name', 'last_name', 'email'].join(',')
+    const url = `https://graph.facebook.com/me?access_token=${token}&fields=${fields}`;
+    console.log(url)
     const response = await axios.get(url);
+    console.log(response.data)
     if (!response.data || !response.data.is_valid || !response.data.user_id) {
       return null;
     }
     return response;
   } catch (e) {
-    console.log(e);
+    console.log(e.response);
     return null;
   }
 };
