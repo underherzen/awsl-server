@@ -188,7 +188,8 @@ const signUp = async (req, res, next) => {
         lastname: body.lastName,
         email: body.email,
         sms_number: body.phone,
-        ip_addy_display: req.ipInfo,
+        ip_addy_display: req.ipInfo.ip,
+        country: req.ipInfo.country,
       };
       const response = await createOntraportSubscription(ontraportData);
       ontraportId = +response.data.data.id;
