@@ -373,7 +373,7 @@ const sendMessageAfterFirstDailyMessage = async () => {
     .filter((message) => {
       const count = messages.filter((el) => el.user_id === message.user_id).length;
       const diff = moment().diff(moment(message.created_at), 'h');
-      console.log(diff)
+      console.log(diff);
       return count === 1 && diff === 2;
     })
     .map((el) => el.user_id);
