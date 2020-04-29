@@ -94,12 +94,13 @@ const resetSubscription = async (req, res, next) => {
     [STRIPE_STATUSES.PAUSED, STRIPE_STATUSES.ACTIVE, STRIPE_STATUSES.TRIALING].includes(subscription.status) &&
     subscription.cancel_at_period_end === true
   ) {
-    await Promise.all([
-      stripe.subscriptions.update(subscription.id, {
-        cancel_at_period_end: false,
-      }),
-      Subscription.update({ cancel_at_period_end: false }, { where: { id: subscription.id } }),
-    ]);
+    const updatedSubscription = await stripe.subscriptions.update(subscription.id, {
+      cancel_at_period_end: false,
+    });
+    await Subscription.update(
+      { cancel_at_period_end: false, status: updatedSubscription.status },
+      { where: { id: subscription.id } }
+    );
     user = await userToFront(user.id);
     res.send({ user });
     return;

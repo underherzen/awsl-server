@@ -86,7 +86,6 @@ const sendFirstDailySms = async () => {
       ]);
 
       const diff = moment().diff(moment(userGuide.created_at), 'minutes');
-
       if (diff < 5) {
         return;
       }
@@ -367,16 +366,17 @@ const sendMessageAfterFirstDailyMessage = async () => {
         [Op.notIn]: userIds,
       },
       type: MESSAGES_TYPES.DAILY,
+      day: 1,
     },
   });
   userIds = messages
     .filter((message) => {
       const count = messages.filter((el) => el.user_id === message.user_id).length;
       const diff = moment().diff(moment(message.created_at), 'h');
-      console.log(diff);
-      return count === 1 && diff === 2;
+      return diff === 2;
     })
     .map((el) => el.user_id);
+  userIds = [...new Set(userIds)]; // to make unique array
   const users = await User.findAll({
     where: {
       id: {
