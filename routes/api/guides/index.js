@@ -5,24 +5,24 @@ const guideController = require('../../../controllers/api/guides');
 
 // public methods
 
-router.get('/load-guides', guideController.loadGuides);
+router.get('/load_guides', guideController.loadGuides);
 
 // private methods
 
 router.use('/*', userIsAuth);
 
-router.post('/select-guide', guideController.selectGuide);
+router.post('/select_guide', guideController.selectGuide);
 
-router.get('/guide-day', guideController.getGuideDay);
+router.get('/guide_day', guideController.getGuideDay);
 
-router.get('/guide-days-slider', guideController.getGuideDaysForSlider);
+router.get('/guide_days_slider', guideController.getGuideDaysForSlider);
 
-router.post('/reset-guide', guideController.resetGuide);
+router.post('/reset_guide', guideController.resetGuide);
 
-router.post('/accept-guide-day', guideController.acceptGuideDay);
+router.post('/accept_guide_day', guideController.acceptGuideDay);
 
-router.post('/visit-guide-day', guideController.visitGuideDay);
+router.post('/visit_guide_day', guideController.visitGuideDay);
 
-router.post('/select-previous', guideController.selectPrevious);
+router.post('/select_previous', guideController.selectPrevious);
 
 module.exports = router;

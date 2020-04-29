@@ -3,10 +3,10 @@ const router = express.Router();
 const passwordController = require('../../../../controllers/api/account/password');
 const { userIsAuth } = require('../../../../controllers');
 
-router.get('/reset-password', passwordController.sendResetPasswordEmail);
+router.get('/reset_password', passwordController.sendResetPasswordEmail);
 
-router.post('/reset-password', passwordController.resetPassword);
+router.post('/reset_password', passwordController.resetPassword);
 
-router.post('/change-password', userIsAuth, passwordController.changePassword);
+router.post('/change_password', userIsAuth, passwordController.changePassword);
 
 module.exports = router;
