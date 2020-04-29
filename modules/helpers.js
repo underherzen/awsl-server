@@ -74,6 +74,10 @@ const userToFront = async (id) => {
   user.reset_current_course_token = resetCurrentCourseToken.token;
   user.reset_current_course_attempts = resetCurrentCourseToken.attempts_left;
   user.subscription_notifications = subscriptionNotification;
+  delete user.password;
+  delete user.created_at;
+  delete user.updated_at;
+  delete user.can_receive_texts;
   return user;
 };
 
