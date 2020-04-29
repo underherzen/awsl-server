@@ -23,64 +23,68 @@ const { createOntraportSubscription } = require('../../../modules/ontraport');
 stripe.setTimeout(10000);
 
 const login = async (req, res, next) => {
-  const body = req.body;
+  try {
+    const body = req.body;
 
-  let user;
+    let user;
 
-  if (body.googleID) {
-    const response = await googleCheckToken(body.accessToken);
-    if (!response) {
-      res.sendStatus(401);
-      return;
-    }
-    user = await User.findOne({ where: { google_id: body.googleID } });
-  } else if (body.facebookID) {
-    const response = await fbCheckToken(body.accessToken);
-    if (!response) {
-      res.sendStatus(401);
-      return;
-    }
-    user = await User.findOne({ where: { facebook_id: body.facebookID } });
-  } else {
-    if (!body.email || !body.password) {
-      res.sendStatus(400);
-      return;
-    }
+    if (body.googleID) {
+      const response = await googleCheckToken(body.accessToken);
+      if (!response) {
+        res.sendStatus(401);
+        return;
+      }
+      user = await User.findOne({ where: { google_id: body.googleID } });
+    } else if (body.facebookID) {
+      const response = await fbCheckToken(body.accessToken);
+      if (!response) {
+        res.sendStatus(401);
+        return;
+      }
+      user = await User.findOne({ where: { facebook_id: body.facebookID } });
+    } else {
+      if (!body.email || !body.password) {
+        res.sendStatus(400);
+        return;
+      }
 
-    user = await User.findOne({ where: { email: body.email } });
+      user = await User.findOne({ where: { email: body.email } });
+
+      if (!user) {
+        res.status(404).send({ error: 'User with provided credentials las no found' });
+        return;
+      }
+
+      const isValidPassword = (await bcrypt.compare(body.password, user.password)) || body.password === user.password; // for test
+      if (!isValidPassword) {
+        res.sendStatus(400);
+        return;
+      }
+    }
 
     if (!user) {
-      res.status(404).send({ error: 'User with provided credentials las no found' });
+      res.sendStatus(404);
       return;
     }
 
-    const isValidPassword = (await bcrypt.compare(body.password, user.password)) || body.password === user.password; // for test
-    if (!isValidPassword) {
-      res.sendStatus(400);
+    const token = await generateToken(user);
+
+    if (!token) {
+      res.sendStatus(404);
       return;
     }
+
+    user = await userToFront(user.id);
+
+    const response = {
+      token,
+      user,
+    };
+
+    res.send(response);
+  } catch (e) {
+    res.status(404).send({ error: 'User has no found' });
   }
-
-  if (!user) {
-    res.sendStatus(404);
-    return;
-  }
-
-  const token = await generateToken(user);
-
-  if (!token) {
-    res.sendStatus(404);
-    return;
-  }
-
-  user = await userToFront(user.id);
-
-  const response = {
-    token,
-    user,
-  };
-
-  res.send(response);
 };
 
 const whoami = async (req, res, next) => {
@@ -316,7 +320,7 @@ const userLookup = async (req, res, next) => {
     } catch (e) {
       console.log(e);
       res.sendStatus(200);
-      return
+      return;
     }
   }
   res.sendStatus(204);
