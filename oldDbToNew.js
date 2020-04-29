@@ -14,7 +14,14 @@ const {
   Message,
   SubscriptionNotification,
 } = require('./models');
-const { USER_TYPES, MESSAGES_TYPES, STRIPE_STATUSES, TOKEN_TYPES, MESSAGES_STATUSES } = require('./constants');
+const {
+  USER_TYPES,
+  MESSAGES_TYPES,
+  STRIPE_STATUSES,
+  TOKEN_TYPES,
+  MESSAGES_STATUSES,
+  ACTIVE_STATUSES,
+} = require('./constants');
 const { generateRandString } = require('./modules/helpers');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
 
@@ -98,134 +105,155 @@ async function main() {
       /*
       SUBSCRIPTION CREATING
        */
-      const dbSubscription = subscriptions.find((sub) => sub.userId === user.id);
-      const stripeSub = await stripe.subscriptions.retrieve(dbSubscription.id);
-      const stripeCustomer = await stripe.customers.retrieve(stripeSub.customer);
-      const coupon = _.get(stripeSub, 'discount.coupon', null);
-      let isFreeReg = false;
-      if (coupon && coupon.duration === 'forever' && coupon.percent_off === 100) {
-        isFreeReg = true;
+      try {
+        const dbSubscription = subscriptions.find((sub) => sub.userId === user.id);
+        const stripeSub = await stripe.subscriptions.retrieve(dbSubscription.id);
+        const stripeCustomer = await stripe.customers.retrieve(stripeSub.customer);
+        const coupon = _.get(stripeSub, 'discount.coupon', null);
+        let isFreeReg = false;
+        if (coupon && coupon.duration === 'forever' && coupon.percent_off === 100) {
+          isFreeReg = true;
+        }
+        const last4 = _.get(stripeCustomer, 'sources.data[0].last4', null);
+        const newSubscription = await Subscription.create({
+          id: stripeSub.id,
+          user_id: newUser.id,
+          customer: stripeCustomer.id,
+          status: stripeSub.status,
+          plan_id: stripeSub.plan.id,
+          coupon: _.get(stripeSub, 'discount.coupon.id'),
+          is_free_reg: isFreeReg,
+          cancel_at_period_end: stripeSub.cancel_at_period_end,
+          next_payment: moment(stripeSub.current_period_end * 1000).format('YYYY-MM-DD HH:mm:ss'),
+          last4,
+        });
+      } catch (e) {
+        
       }
-      const last4 = _.get(stripeCustomer, 'sources.data[0].last4', null);
-      const newSubscription = await Subscription.create({
-        id: stripeSub.id,
-        user_id: newUser.id,
-        customer: stripeCustomer.id,
-        status: stripeSub.status,
-        plan_id: stripeSub.plan.id,
-        coupon: _.get(stripeSub, 'discount.coupon.id'),
-        is_free_reg: isFreeReg,
-        cancel_at_period_end: stripeSub.cancel_at_period_end,
-        next_payment: moment(stripeSub.current_period_end * 1000).format('YYYY-MM-DD HH:mm:ss'),
-        last4,
-      });
-      const resetToken = resetTokens.find((token) => token.userId === user.id);
+      
+      
 
       /*
       RESET CURRENT COURSE TOKENS CREATING
        */
-      console.log('RUNNING RESET COURSE');
-      await ResetCurrentCourseToken.create({
-        user_id: newUser.id,
-        token: resetToken ? resetToken.resetCurrentCourseToken : generateRandString(),
-        expiry: newSubscription.next_payment,
-        attempts_left: resetToken ? 3 - resetToken.resetCourseRetries : 3,
-      });
+      try {
+        console.log('RUNNING RESET COURSE');
+        const resetToken = resetTokens.find((token) => token.userId === user.id);
+        await ResetCurrentCourseToken.create({
+          user_id: newUser.id,
+          token: resetToken ? resetToken.resetCurrentCourseToken : generateRandString(),
+          expiry: newSubscription.next_payment,
+          attempts_left: resetToken ? 3 - resetToken.resetCourseRetries : 3,
+        });
+      } catch (e) {
+        
+      }
+     
       /*
       USER GUIDES CREATING
        */
-      const userGuidesPromises = [];
-      const userSGuides = userGuides.filter((guide) => guide.userId === user.id);
-      for (let userGuide of userSGuides) {
-        const procGuide = await Guide.findOne({
-          where: {
-            old_guide_id: userGuide.guideId,
-          },
-        });
-        if (userGuide.isComplete) {
-          let count = 0;
-          userGuidesPromises.push(
-            UserGuide.create({
-              user_id: newUser.id,
-              day: 21,
-              guide_id: procGuide.id,
-              completed: true,
-            })
-          );
-          while (count < 22) {
-            userGuidesPromises.push(
-              UserGuideDay.create({
-                user_id: newUser.id,
-                guide_id: procGuide.id,
-                day: count,
-                accepted: true,
-                visited: true,
-              })
-            );
-            count += 1;
-          }
-        } else {
-          if (user.day) {
+      try {
+        const userGuidesPromises = [];
+        const userSGuides = userGuides.filter((guide) => guide.userId === user.id);
+        for (let userGuide of userSGuides) {
+          const procGuide = await Guide.findOne({
+            where: {
+              old_guide_id: userGuide.guideId,
+            },
+          });
+          if (userGuide.isComplete) {
             let count = 0;
             userGuidesPromises.push(
               UserGuide.create({
-                guide_id: procGuide.id,
-                day: user.day,
-                completed: false,
                 user_id: newUser.id,
+                day: 21,
+                guide_id: procGuide.id,
+                completed: true,
               })
             );
-            while (count < +user.day + 1) {
+            while (count < 22) {
               userGuidesPromises.push(
                 UserGuideDay.create({
                   user_id: newUser.id,
                   guide_id: procGuide.id,
                   day: count,
+                  accepted: true,
+                  visited: true,
                 })
               );
               count += 1;
             }
+          } else {
+            if (user.day) {
+              let count = 0;
+              userGuidesPromises.push(
+                UserGuide.create({
+                  guide_id: procGuide.id,
+                  day: user.day,
+                  completed: false,
+                  user_id: newUser.id,
+                })
+              );
+              while (count < +user.day + 1) {
+                userGuidesPromises.push(
+                  UserGuideDay.create({
+                    user_id: newUser.id,
+                    guide_id: procGuide.id,
+                    day: count,
+                  })
+                );
+                count += 1;
+              }
+            }
           }
         }
+        await Promise.all(userGuidesPromises);
+      } catch (e) {
+        
       }
-      await Promise.all(userGuidesPromises);
+      
 
       /*
       SHORT URLS
        */
-
-      const usersShortUrls = shortUrls.filter((url) => url.userId === user.id);
-      await Promise.all(
-        usersShortUrls.map((url) => {
-          return ShortUrl.create({
-            user_id: newUser.id,
-            short_url: url.shortUrl,
-            full_url: url.fullUrl,
-          });
-        })
-      );
+      try {
+        const usersShortUrls = shortUrls.filter((url) => url.userId === user.id);
+        await Promise.all(
+          usersShortUrls.map((url) => {
+            return ShortUrl.create({
+              user_id: newUser.id,
+              short_url: url.shortUrl,
+              full_url: url.fullUrl,
+            });
+          })
+        );
+      } catch (e) {}
 
       /*
       TOKENS CREATING
        */
+      try {
+        const usersTokens = userTokens.filter((token) => token.userId === user.id);
+        await Promise.all(
+          usersTokens.map((token) => {
+            console.log('TOKEN', token);
+            return Token.create({
+              user_id: newUser.id,
+              token: token.token,
+              type: TOKEN_TYPES.SMS_AUTH,
+            });
+          })
+        );
+      } catch (e) {}
 
-      const usersTokens = userTokens.filter((token) => token.userId === user.id);
-      await Promise.all(
-        usersTokens.map((token) => {
-          console.log('TOKEN', token);
-          return Token.create({
-            user_id: newUser.id,
-            token: token.token,
-            type: TOKEN_TYPES.SMS_AUTH,
-          });
-        })
-      );
       /*
       SUB NOTIFICATIONS
        */
-      await SubscriptionNotification.create({
-        user_id: newUser.id,
-      });
+      try {
+        await SubscriptionNotification.create({
+          user_id: newUser.id,
+        });
+      } catch (e) {}
 
       /*
       CREATING MESSAGES TO NOT TO FUCK IT UP ;)
@@ -271,4 +299,47 @@ async function main() {
 
 // processTimezone('+03:30');
 
-main();
+main().then(async () => {
+  await setActiveOrNot();
+});
+
+async function setActiveOrNot() {
+  const users = await User.findAll();
+  await Promise.all(
+    users.map(async (user) => {
+      const subscription = await Subscription.findOne({
+        where: {
+          user_id: user.id,
+        },
+      });
+      if (!subscription) {
+        console.log('-----------')
+        console.log(user)
+      }
+      if (subscription && ACTIVE_STATUSES.includes(subscription.status)) {
+        return User.update(
+          {
+            is_active: true,
+          },
+          {
+            where: {
+              id: user.id,
+            },
+          }
+        );
+      }
+      return User.update(
+        {
+          is_active: false,
+        },
+        {
+          where: {
+            id: user.id,
+          },
+        }
+      );
+    })
+  );
+}
+
+// setActiveOrNot()
