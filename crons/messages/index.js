@@ -110,7 +110,7 @@ const sendFirstDailySms = async () => {
 };
 
 const dailyText = async () => {
-  const timezones = getTimezones(7);
+  const timezones = getTimezones(8);
   console.log('RUNNING DAILY-TEXT FROM TIMEZONE' + timezones);
 
   const users = await User.findAll({
