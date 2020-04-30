@@ -56,7 +56,7 @@ const getTwilioNumber = async (client, from) => {
   return isUSPhone ? process.env.PHONE : process.env.INTERNATIONAL_PHONE;
 };
 
-sendUndeliveredMessage = async (message, client) => {
+const sendUndeliveredMessage = async (message, client) => {
   try {
     const { from, to, text_message, media_url } = message;
     if (!from || !to || !text_message) {
