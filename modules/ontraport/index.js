@@ -28,4 +28,5 @@ const updateOntraportSubscription = (id, fields) => {
 module.exports = {
   createOntraportSubscription,
   updateOntraportSubscription,
+  getOntraportStringData,
 };
