@@ -7,6 +7,7 @@ const shortUrlRoutes = require('./short_urls');
 const couponRoutes = require('./coupons');
 const designRoutes = require('./design');
 const ontraportRoutes = require('./ontraport');
+const testRoutes = require('./test');
 
 router.use('/guides', guideRoutes);
 
@@ -21,5 +22,7 @@ router.use('/coupons', couponRoutes);
 router.use('/design', designRoutes);
 
 router.use('/ontraport', ontraportRoutes);
+
+router.use('/test', testRoutes);
 
 module.exports = router;

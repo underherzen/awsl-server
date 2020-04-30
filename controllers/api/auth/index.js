@@ -83,7 +83,7 @@ const login = async (req, res, next) => {
 
     res.send(response);
   } catch (e) {
-    console.log(e)
+    console.log(e);
     res.status(404).send({ error: 'User has no found' });
   }
 };
@@ -108,9 +108,8 @@ const whoami = async (req, res, next) => {
 
     res.send({ user });
   } catch (e) {
-    next(e)
+    next(e);
   }
-
 };
 
 const signUp = async (req, res, next) => {
@@ -203,8 +202,8 @@ const signUp = async (req, res, next) => {
       };
       const response = await createOntraportSubscription(ontraportData);
       ontraportId = +response.data.data.id;
-    } catch (error) {
-      console.log(error);
+    } catch (e) {
+      console.log(e);
     }
 
     const startDay = body.startDay || moment().format('YYYY-MM-DD HH:mm:ss');
@@ -293,63 +292,71 @@ const signUp = async (req, res, next) => {
  * @returns {Promise<void>}
  */
 const userLookup = async (req, res, next) => {
-  const body = req.query;
-  console.log(body);
-  const params = {};
-  if (body.email) {
-    params.email = body.email;
-  } else if (body.googleID) {
-    params.google_id = body.googleID;
-  } else if (body.facebookID) {
-    params.facebook_id = body.facebookID;
-  } else {
-    res.sendStatus(400);
-    return;
-  }
-  const existingUser = await User.findOne({
-    where: { ...params },
-  });
-  if (existingUser) {
-    res.sendStatus(400);
-    return;
-  }
-  if (body.facebookID && body.accessToken) {
-    try {
-      const fields = ['first_name', 'last_name', 'email'].join(',');
-      const url = `https://graph.facebook.com/me?access_token=${body.accessToken}&fields=${fields}`;
-      const { data: response } = await axios.get(url);
-      console.log(response);
-      if (response.first_name || response.last_name || response.email || response.id) {
-        res.send({ response });
-        return;
-      }
-    } catch (e) {
-      console.log(e);
-      res.sendStatus(200);
+  try {
+    const body = req.query;
+    console.log(body);
+    const params = {};
+    if (body.email) {
+      params.email = body.email;
+    } else if (body.googleID) {
+      params.google_id = body.googleID;
+    } else if (body.facebookID) {
+      params.facebook_id = body.facebookID;
+    } else {
+      res.sendStatus(400);
       return;
     }
+    const existingUser = await User.findOne({
+      where: { ...params },
+    });
+    if (existingUser) {
+      res.sendStatus(400);
+      return;
+    }
+    if (body.facebookID && body.accessToken) {
+      try {
+        const fields = ['first_name', 'last_name', 'email'].join(',');
+        const url = `https://graph.facebook.com/me?access_token=${body.accessToken}&fields=${fields}`;
+        const { data: response } = await axios.get(url);
+        console.log(response);
+        if (response.first_name || response.last_name || response.email || response.id) {
+          res.send({ response });
+          return;
+        }
+      } catch (e) {
+        console.log(e);
+        res.sendStatus(200);
+        return;
+      }
+    }
+    res.sendStatus(204);
+  } catch (e) {
+    next(e);
   }
-  res.sendStatus(204);
 };
 
 const authBySmsToken = async (req, res, next) => {
-  const body = req.body;
-  if (!body.token || !body.user_id) {
-    res.sendStatus(401);
-    return;
+  try {
+    const body = req.body;
+    if (!body.token || !body.user_id) {
+      res.sendStatus(401);
+      return;
+    }
+    const token = await Token.findOne({
+      where: {
+        token: body.token,
+        // user_id: body.user_id,
+        type: TOKEN_TYPES.SMS_AUTH,
+      },
+    });
+    if (!token) {
+      res.sendStatus(404);
+    }
+    const authToken = await generateToken({ id: body.user_id });
+    res.send({ token: authToken });
+  } catch (e) {
+    next(e);
   }
-  const token = await Token.findOne({
-    where: {
-      token: body.token,
-      // user_id: body.user_id,
-      type: TOKEN_TYPES.SMS_AUTH,
-    },
-  });
-  if (!token) {
-    res.sendStatus(404);
-  }
-  const authToken = await generateToken({ id: body.user_id });
-  res.send({ token: authToken });
 };
 
 module.exports = {

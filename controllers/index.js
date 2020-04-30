@@ -4,46 +4,58 @@ const { retrieveToken } = require('../modules/helpers');
 const moment = require('moment');
 
 const isUserActive = (req, res, next) => {
-  if (!req.user.is_active) {
-    res.sendStatus(401);
-    return;
+  try {
+    if (!req.user.is_active) {
+      res.sendStatus(401);
+      return;
+    }
+    next();
+  } catch (e) {
+    next(e);
   }
-  next();
 };
 
 const userIsAuth = async (req, res, next) => {
-  const token = await retrieveToken(req.headers);
-  if (!token) {
-    res.sendStatus(401);
-    return;
-  }
+  try {
+    const token = await retrieveToken(req.headers);
+    if (!token) {
+      res.sendStatus(401);
+      return;
+    }
 
-  if (moment() > moment(token.expiry)) {
-    res.sendStatus(401);
-    return;
-  }
+    if (moment() > moment(token.expiry)) {
+      res.sendStatus(401);
+      return;
+    }
 
-  const user = await User.findByPk(token.user_id);
-  if (!user) {
-    res.sendStatus(401);
-    return;
+    const user = await User.findByPk(token.user_id);
+    if (!user) {
+      res.sendStatus(401);
+      return;
+    }
+    req.user = user.dataValues;
+    next();
+  } catch (e) {
+    next(e);
   }
-  req.user = user.dataValues;
-  next();
 };
 
 const userHasSubscription = async (req, res, next) => {
-  let user = req.user;
-  const subscription = await Subscription.findOne({
-    where: { user_id: user.id },
-  });
+  try {
+    let user = req.user;
+    const subscription = await Subscription.findOne({
+      where: { user_id: user.id },
+    });
 
-  if (!subscription) {
-    res.sendStatus(400);
-    return;
+    if (!subscription) {
+      res.sendStatus(400);
+      return;
+    }
+    req.subscription = subscription;
+    next();
+  } catch (e) {
+    next(e);
   }
-  req.subscription = subscription;
-  next();
 };
 
 /**
@@ -61,9 +73,7 @@ const retrieveAndUpdateUserSubscription = async (req, res, next) => {
     await Subscription.update(
       {
         status: subscriptionInStripe.status,
-        next_payment: moment(subscriptionInStripe.current_period_end * 1000).format(
-          'YYYY-MM-DD HH:mm:ss'
-        ),
+        next_payment: moment(subscriptionInStripe.current_period_end * 1000).format('YYYY-MM-DD HH:mm:ss'),
         plan_id: subscriptionInStripe.plan.id,
         cancel_at_period_end: subscriptionInStripe.cancel_at_period_end,
       },
@@ -73,7 +83,7 @@ const retrieveAndUpdateUserSubscription = async (req, res, next) => {
     req.subscription = subscription;
     next();
   } catch (e) {
-    throw e;
+    next(e);
   }
 };
 
