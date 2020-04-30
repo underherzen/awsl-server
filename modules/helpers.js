@@ -71,8 +71,10 @@ const userToFront = async (id) => {
   user.next_payment = subscription.next_payment;
   user.last4 = subscription.last4;
   user.cancel_at_period_end = subscription.cancel_at_period_end;
-  user.reset_current_course_token = resetCurrentCourseToken.token;
-  user.reset_current_course_attempts = resetCurrentCourseToken.attempts_left;
+  if (resetCurrentCourseToken) {
+    user.reset_current_course_token = resetCurrentCourseToken.token;
+    user.reset_current_course_attempts = resetCurrentCourseToken.attempts_left;
+  }
   user.subscription_notifications = subscriptionNotification;
   delete user.password;
   delete user.created_at;
