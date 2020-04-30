@@ -109,7 +109,7 @@ const generateSmsAuthToken = async (userId) => {
         where: {
           token,
           type: TOKEN_TYPES.SMS_AUTH,
-          user_id: userId,
+          // user_id: userId,
         },
       });
       if (!existingToken) {
