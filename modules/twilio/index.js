@@ -31,7 +31,7 @@ const getTimezones = (sendTime) => {
 
 const sendInternationalSms = async (client, messageObject) => {
   let res;
-  messageObject.mediaUrl = 'http://127.0.0.1:4313/1.png'; // THIS IS FOR FREE  TESTING :)))))
+  // messageObject.mediaUrl = 'http://127.0.0.1:4313/1.png'; // THIS IS FOR FREE  TESTING :)))))
   try {
     res = await client.messages.create(messageObject);
   } catch (e) {

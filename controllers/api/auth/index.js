@@ -83,6 +83,7 @@ const login = async (req, res, next) => {
 
     res.send(response);
   } catch (e) {
+    console.log(e)
     res.status(404).send({ error: 'User has no found' });
   }
 };

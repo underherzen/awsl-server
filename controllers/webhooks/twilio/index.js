@@ -1,5 +1,5 @@
 const { Message, User } = require('../../../models');
-const { REPLY_TEXTS, REPLY_COMMANDS, MESSAGES_TYPES } = require('../../../constants');
+const { REPLY_TEXTS, REPLY_COMMANDS, MESSAGES_TYPES, MESSAGES_STATUSES } = require('../../../constants');
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const { parseUrlEncode, generateSmsAuthToken } = require('../../../modules/helpers');
 const { getTwilioNumber } = require('../../../modules/twilio');
@@ -27,9 +27,10 @@ const twilioStatusCallback = async (req, res, next) => {
 const replyWebhook = async (req, res, next) => {
   const twiml = new MessagingResponse();
   const message = twiml.message();
+  console.log(req.body);
 
-  const body = parseUrlEncode(req.body);
-  const sentCommand = body.Body.trim().toUpperCase();
+  const body = req.body;
+  let sentCommand = body.Body.trim().toUpperCase();
   let messageBody;
 
   const authCommands = [
@@ -61,6 +62,7 @@ const replyWebhook = async (req, res, next) => {
       await Message.create({
         user_id: user.id,
         type: MESSAGES_TYPES.REPLY_YES,
+        status: MESSAGES_STATUSES.SENT,
       });
     } else if (sentCommand === REPLY_COMMANDS.STOP) {
       await User.update(
@@ -75,6 +77,7 @@ const replyWebhook = async (req, res, next) => {
       await Message.create({
         user_id: user.id,
         type: MESSAGES_TYPES.REPLY_STOP,
+        status: MESSAGES_STATUSES.SENT,
       });
     } else if (sentCommand === REPLY_COMMANDS.UNSTOP) {
       await User.update(
@@ -95,12 +98,14 @@ const replyWebhook = async (req, res, next) => {
       await Message.create({
         user_id: user.id,
         type: MESSAGES_TYPES.REPLY_UNSTOP,
+        status: MESSAGES_STATUSES.SENT,
       });
     } else if (sentCommand === REPLY_COMMANDS.HELP) {
       messageBody = REPLY_TEXTS.HELP.replace('{0}', user.first_name);
       await Message.create({
         user_id: user.id,
         type: MESSAGES_TYPES.REPLY_HELP,
+        status: MESSAGES_STATUSES.SENT,
       });
     }
     message.body(messageBody);
