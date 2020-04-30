@@ -25,7 +25,27 @@ const updateOntraportSubscription = (id, fields) => {
   });
 };
 
+const checkExistOntraportSubscriptionByEmail = (email) => {
+  const condition = JSON.stringify([
+    {
+      field: {
+        field: 'email',
+      },
+      op: '=',
+      value: {
+        value: email,
+      },
+    },
+  ]);
+
+  return axios.get(`${process.env.ONTRAPORT_API_URL_CONTACTS}?range=1&condition=${condition}`, {
+    headers: ONTRAPORT_HEADERS,
+  });
+};
+
 module.exports = {
   createOntraportSubscription,
   updateOntraportSubscription,
+  getOntraportStringData,
+  checkExistOntraportSubscriptionByEmail,
 };

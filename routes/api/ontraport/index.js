@@ -5,4 +5,6 @@ const { userIsAuth } = require('../../../controllers');
 
 router.post('/visit_first_day_sms_link', userIsAuth, ontraportController.visitFirstDaySmsLink);
 
+router.post('/add_in_ontraport', ontraportController.addInOntraport);
+
 module.exports = router;

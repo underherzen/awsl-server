@@ -1,4 +1,8 @@
-const { updateOntraportSubscription, createOntraportSubscription } = require('../../../modules/ontraport');
+const {
+  createOntraportSubscription,
+  updateOntraportSubscription,
+  checkExistOntraportSubscriptionByEmail,
+} = require('../../../modules/ontraport');
 const { Message } = require('../../../models');
 const moment = require('moment');
 const _ = require('lodash');
@@ -25,37 +29,37 @@ const visitFirstDaySmsLink = async (req, res, next) => {
   }
 };
 
-const subscribeOntraport = async (req, res, next) => {
-  const {
-    user,
-    ipInfo,
-    body: { requisites },
-  } = req;
+const addInOntraport = async (req, res, next) => {
+  const { body } = req;
 
-  if (_.isUndefined(requisites)) {
+  if (_.isUndefined(body)) {
     res.sendStatus(404).send({ error: 'Something sent wrong!' });
     return;
   }
 
-  if (_.isUndefined(user)) {
-    try {
-      const subscription = {
-        firstname: requisites.firstname,
-        email: requisites.email,
-        sms_number: requisites.phone,
-        ip_addy_display: ipInfo.ip,
-        country: ipInfo.country,
-      };
-      await createOntraportSubscription(subscription);
-      res.send({ message: 'You’re in! Check your inbox :)' });
-    } catch (error) {
-      res.sendStatus(404).send({ error: 'Something sent wrong!' });
+  try {
+    const response = await checkExistOntraportSubscriptionByEmail(body.email);
+
+    const isExistSubscription = response.data.data.length !== 0;
+    if (isExistSubscription) {
+      res.sendStatus(400).send({ error: 'Subscription is exist...' });
       return;
     }
-  } else {
+  } catch (error) {
+    res.sendStatus(404).send({ error: 'Something sent wrong!' });
+    return;
+  }
+
+  try {
+    await createOntraportSubscription(body);
+    res.send({ message: 'You’re in! Check your inbox :)' });
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(404).send({ error: 'Something sent wrong!' });
   }
 };
 
 module.exports = {
   visitFirstDaySmsLink,
+  addInOntraport,
 };
