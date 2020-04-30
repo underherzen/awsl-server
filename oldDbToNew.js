@@ -127,27 +127,28 @@ async function main() {
           next_payment: moment(stripeSub.current_period_end * 1000).format('YYYY-MM-DD HH:mm:ss'),
           last4,
         });
+        /*
+     RESET CURRENT COURSE TOKENS CREATING
+      */
+        try {
+          console.log('RUNNING RESET COURSE');
+          const resetToken = resetTokens.find((token) => token.userId === user.id);
+          await ResetCurrentCourseToken.create({
+            user_id: newUser.id,
+            token: resetToken ? resetToken.resetCurrentCourseToken : generateRandString(),
+            expiry: newSubscription.next_payment,
+            attempts_left: resetToken ? 3 - resetToken.resetCourseRetries : 3,
+          });
+        } catch (e) {
+
+        }
       } catch (e) {
         
       }
       
       
 
-      /*
-      RESET CURRENT COURSE TOKENS CREATING
-       */
-      try {
-        console.log('RUNNING RESET COURSE');
-        const resetToken = resetTokens.find((token) => token.userId === user.id);
-        await ResetCurrentCourseToken.create({
-          user_id: newUser.id,
-          token: resetToken ? resetToken.resetCurrentCourseToken : generateRandString(),
-          expiry: newSubscription.next_payment,
-          attempts_left: resetToken ? 3 - resetToken.resetCourseRetries : 3,
-        });
-      } catch (e) {
-        
-      }
+
      
       /*
       USER GUIDES CREATING
@@ -155,12 +156,15 @@ async function main() {
       try {
         const userGuidesPromises = [];
         const userSGuides = userGuides.filter((guide) => guide.userId === user.id);
+
         for (let userGuide of userSGuides) {
           const procGuide = await Guide.findOne({
             where: {
               old_guide_id: userGuide.guideId,
             },
           });
+          const isActive = user.guideId === procGuide.old_guide_id;
+          const acceptedDays = user.acceptedDays ? user.acceptedDays.split(' ') : [];
           if (userGuide.isComplete) {
             let count = 0;
             userGuidesPromises.push(
@@ -200,6 +204,7 @@ async function main() {
                     user_id: newUser.id,
                     guide_id: procGuide.id,
                     day: count,
+                    accepted: isActive && acceptedDays.includes(count)
                   })
                 );
                 count += 1;
@@ -227,7 +232,9 @@ async function main() {
             });
           })
         );
-      } catch (e) {}
+      } catch (e) {
+        console.log(e)
+      }
 
       /*
       TOKENS CREATING
@@ -244,7 +251,9 @@ async function main() {
             });
           })
         );
-      } catch (e) {}
+      } catch (e) {
+        console.log(e)
+      }
 
       /*
       SUB NOTIFICATIONS
