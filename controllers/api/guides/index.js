@@ -10,7 +10,14 @@ const { MESSAGES_TYPES } = require('../../../constants');
 const _ = require('lodash');
 
 const loadGuides = async (req, res, next) => {
-  const guides = await Guide.findAll();
+  const guides = await Guide.findAll({
+    where: {
+      id: {
+        [Op.ne]: 2, // THIS IS FUCKING PIECE OF SHIT TODO: MAKE ATTRIBUTE ACTIVE
+      },
+    },
+  });
+
   res.send(guides);
 };
 

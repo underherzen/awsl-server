@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "precommit": "lint-staged",
     "dbscript": "node ./dbscript.js",
-    "worker": "node ./worker.js"
+    "worker": "node ./worker.js",
+    "dev-worker": "NODE_ENV=development node ./worker.js"
   },
   "dependencies": {
     "@sendgrid/mail": "^7.0.1",

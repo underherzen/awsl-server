@@ -336,7 +336,7 @@ const authBySmsToken = async (req, res, next) => {
   const token = await Token.findOne({
     where: {
       token: body.token,
-      user_id: body.user_id,
+      // user_id: body.user_id,
       type: TOKEN_TYPES.SMS_AUTH,
     },
   });
