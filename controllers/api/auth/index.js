@@ -89,23 +89,28 @@ const login = async (req, res, next) => {
 };
 
 const whoami = async (req, res, next) => {
-  const token = await retrieveToken(req.headers);
+  try {
+    const token = await retrieveToken(req.headers);
 
-  if (!token) {
-    res.sendStatus(401);
-    return;
+    if (!token) {
+      res.sendStatus(401);
+      return;
+    }
+    const isTokenExpired = moment() > moment(token.expiry);
+
+    if (isTokenExpired) {
+      res.sendStatus(401);
+      return;
+    }
+    await updateToken(token);
+
+    const user = await userToFront(token.user_id);
+
+    res.send({ user });
+  } catch (e) {
+    next(e)
   }
-  const isTokenExpired = moment() > moment(token.expiry);
 
-  if (isTokenExpired) {
-    res.sendStatus(401);
-    return;
-  }
-  await updateToken(token);
-
-  const user = await userToFront(token.user_id);
-
-  res.send({ user });
 };
 
 const signUp = async (req, res, next) => {
