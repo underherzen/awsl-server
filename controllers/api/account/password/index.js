@@ -58,72 +58,80 @@ const sendResetPasswordEmail = async (req, res, next) => {
     await sgMail.send(msg);
     res.send({ message: 'Email has been sent' });
   } catch (e) {
-    next(e)
+    next(e);
   }
 };
 
 const resetPassword = async (req, res, next) => {
-  const body = req.body;
-  console.log(body);
+  try {
+    const body = req.body;
+    console.log(body);
 
-  if (!body.password || !body.confirm_password || !body.token) {
-    res.sendStatus(400);
-    return;
+    if (!body.password || !body.confirm_password || !body.token) {
+      res.sendStatus(400);
+      return;
+    }
+
+    const token = await Token.findOne({
+      where: {
+        token: body.token,
+        type: TOKEN_TYPES.RESET_PASSWORD,
+        is_used: false,
+      },
+    });
+
+    if (!token) {
+      res.status(404).send({ error: 'Reset token has no found' });
+      return;
+    }
+
+    if (body.password !== body.confirm_password) {
+      res.status(400).send({ error: 'Passwords must be equal' });
+      return;
+    }
+
+    if (moment() > moment(token.expiry)) {
+      res.status(400).send({ error: 'Token has expired' });
+      return;
+    }
+
+    const newPassword = await bcrypt.hash(body.password, 10);
+
+    await Promise.all([
+      User.update({ password: newPassword }, { where: { id: token.user_id } }),
+      Token.update({ is_used: true }, { where: { id: token.id } }),
+    ]);
+    res.send({ message: 'Password has been reset' });
+  } catch (e) {
+    next(e);
   }
-
-  const token = await Token.findOne({
-    where: {
-      token: body.token,
-      type: TOKEN_TYPES.RESET_PASSWORD,
-      is_used: false,
-    },
-  });
-
-  if (!token) {
-    res.status(404).send({ error: 'Reset token has no found' });
-    return;
-  }
-
-  if (body.password !== body.confirm_password) {
-    res.status(400).send({ error: 'Passwords must be equal' });
-    return;
-  }
-
-  if (moment() > moment(token.expiry)) {
-    res.status(400).send({ error: 'Token has expired' });
-    return;
-  }
-
-  const newPassword = await bcrypt.hash(body.password, 10);
-
-  await Promise.all([
-    User.update({ password: newPassword }, { where: { id: token.user_id } }),
-    Token.update({ is_used: true }, { where: { id: token.id } }),
-  ]);
-  res.send({ message: 'Password has been reset' });
 };
 
 const changePassword = async (req, res, next) => {
-  const body = req.body;
-  let user = req.user;
-  console.log(body);
+  try {
+    const body = req.body;
+    let user = req.user;
+    console.log(body);
 
-  const passwordsAreEqual = await bcrypt.compare(body.old_password, user.password);
-  console.log(passwordsAreEqual);
+    const passwordsAreEqual = await bcrypt.compare(body.old_password, user.password);
+    console.log(passwordsAreEqual);
 
-  if (!passwordsAreEqual) {
-    res.status(400).send({ error: 'Old password doesn`t match' });
-    return;
+    if (!passwordsAreEqual) {
+      res.status(400).send({ error: 'Old password doesn`t match' });
+      return;
+    }
+
+    if (body.password !== body.confirm_password) {
+      res.status(400).send({ error: 'Passwords don`t match' });
+      return;
+    }
+
+    const newPassword = await bcrypt.hash(body.password, 10);
+    await User.update({ password: newPassword }, { where: { id: user.id } });
+    res.send({ message: 'Password has changed' });
+  } catch (e) {
+    next(e);
   }
-
-  if (body.password !== body.confirm_password) {
-    res.status(400).send({ error: 'Passwords don`t match' });
-    return;
-  }
-
-  const newPassword = await bcrypt.hash(body.password, 10);
-  await User.update({ password: newPassword }, { where: { id: user.id } });
-  res.send({ message: 'Password has changed' });
 };
 
 module.exports = {

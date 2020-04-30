@@ -3,6 +3,7 @@ const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
 const { toValidPhone } = require('../../../../modules/api/auth');
 const { userToFront } = require('../../../../modules/helpers');
 const { Op } = require('sequelize');
+
 const changeBio = async (req, res, next) => {
   try {
     let user = req.user;
@@ -47,7 +48,7 @@ const changeBio = async (req, res, next) => {
     user = await userToFront(user.id);
     res.send({ user });
   } catch (e) {
-    next(e)
+    next(e);
   }
 };
 
@@ -88,7 +89,7 @@ const changeEmail = async (req, res, next) => {
     user = await userToFront(user.id);
     res.send({ user });
   } catch (e) {
-    next(e)
+    next(e);
   }
 };
 
