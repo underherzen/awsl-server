@@ -1,4 +1,4 @@
-const { updateOntraportSubscription, subscribeOntraport } = require('../../../modules/ontraport');
+const { createOntraportSubscription, updateOntraportSubscription } = require('../../../modules/ontraport');
 const { Message } = require('../../../models');
 const moment = require('moment');
 const _ = require('lodash');
@@ -34,7 +34,7 @@ const addInOntraport = async (req, res, next) => {
   }
 
   try {
-    await subscribeOntraport(body);
+    await createOntraportSubscription(body);
     res.send({ message: 'You’re in! Check your inbox :)' });
   } catch (error) {
     console.log(error);
