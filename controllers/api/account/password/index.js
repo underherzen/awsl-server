@@ -8,54 +8,58 @@ const { generateRandString } = require('../../../../modules/helpers');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const sendResetPasswordEmail = async (req, res, next) => {
-  const body = req.query;
-  if (!body.email) {
-    res.status(400).send({ error: 'E-mail must not be empty' });
-    return;
-  }
-
-  const user = await User.findOne({ where: { email: body.email } });
-  if (!user) {
-    res.status(404).send({ error: 'User with provided email has no found' });
-    return;
-  }
-
-  let doNext = true;
-  let count = 0;
-  let token;
-
-  while (doNext && count < 10) {
-    token = generateRandString();
-    try {
-      await Token.create({
-        user_id: user.id,
-        token,
-        type: TOKEN_TYPES.RESET_PASSWORD,
-        expiry: moment().add(10, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
-      });
-      doNext = false;
-    } catch (e) {
-      count += 1;
-      if (count === 10) {
-        res.sendStatus(500); // to prevent from overdoing
-        return;
-      }
-      console.log(e);
+  try {
+    const body = req.query;
+    if (!body.email) {
+      res.status(400).send({ error: 'E-mail must not be empty' });
+      return;
     }
+
+    const user = await User.findOne({ where: { email: body.email } });
+    if (!user) {
+      res.status(404).send({ error: 'User with provided email has no found' });
+      return;
+    }
+
+    let doNext = true;
+    let count = 0;
+    let token;
+
+    while (doNext && count < 10) {
+      token = generateRandString();
+      try {
+        await Token.create({
+          user_id: user.id,
+          token,
+          type: TOKEN_TYPES.RESET_PASSWORD,
+          expiry: moment().add(10, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
+        });
+        doNext = false;
+      } catch (e) {
+        count += 1;
+        if (count === 10) {
+          res.sendStatus(500); // to prevent from overdoing
+          return;
+        }
+        console.log(e);
+      }
+    }
+
+    const url = `${process.env.BASE_URL}/?reset_password=${token}`;
+
+    const msg = {
+      to: body.email,
+      from: process.env.EMAIL,
+      subject: 'Reset password',
+      text: 'Please follow this link',
+      html: `Please follow this link <a href="${url}">${url}</a>`,
+    };
+
+    await sgMail.send(msg);
+    res.send({ message: 'Email has been sent' });
+  } catch (e) {
+    next(e)
   }
-
-  const url = `${process.env.BASE_URL}/?reset_password=${token}`;
-
-  const msg = {
-    to: body.email,
-    from: process.env.EMAIL,
-    subject: 'Reset password',
-    text: 'Please follow this link',
-    html: `Please follow this link <a href="${url}">${url}</a>`,
-  };
-
-  await sgMail.send(msg);
-  res.send({ message: 'Email has been sent' });
 };
 
 const resetPassword = async (req, res, next) => {
