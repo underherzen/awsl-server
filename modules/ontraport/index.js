@@ -25,7 +25,16 @@ const updateOntraportSubscription = (id, fields) => {
   });
 };
 
+const subscribeOntraport = (fields) => {
+  const data = getOntraportStringData(fields);
+  const headers = { ...ONTRAPORT_HEADERS, 'Content-Type': 'multipart/form-data' };
+  return axios.post(process.env.ONTRAPORT_API_URL_FORM, data, {
+    headers: headers,
+  });
+};
+
 module.exports = {
   createOntraportSubscription,
   updateOntraportSubscription,
+  subscribeOntraport,
 };
