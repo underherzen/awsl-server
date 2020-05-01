@@ -57,7 +57,9 @@ const selectGuide = async (req, res, next) => {
     const existingWelcomeMessage = await Message.findOne({
       where: {
         user_id: user.id,
-        type: MESSAGES_TYPES.WELCOME,
+        type: {
+          [Op.in]: [MESSAGES_TYPES.WELCOME, MESSAGES_TYPES.DAILY]
+        },
       },
     });
 
