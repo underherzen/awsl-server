@@ -36,9 +36,9 @@ const replyWebhook = async (req, res, next) => {
 
     const body = req.body;
     let sentCommand = body.Body.trim().toUpperCase();
-    if (sentCommand.indexOf(' ') > -1) {
-      sentCommand = sentCommand.split(' ')[0]
-    }
+    // if (sentCommand.indexOf(' ') > -1) {
+    //   sentCommand = sentCommand.split(' ')[0]
+    // }
     let messageBody;
 
     const authCommands = [REPLY_COMMANDS.YES, REPLY_COMMANDS.HELP, REPLY_COMMANDS.STOP, REPLY_COMMANDS.UNSTOP];
