@@ -17,6 +17,7 @@ const loadGuides = async (req, res, next) => {
           [Op.ne]: 2, // THIS IS FUCKING PIECE OF SHIT TODO: MAKE ATTRIBUTE ACTIVE
         },
       },
+      order: [['position', 'ASC']],
     });
 
     res.send(guides);
@@ -58,7 +59,7 @@ const selectGuide = async (req, res, next) => {
       where: {
         user_id: user.id,
         type: {
-          [Op.in]: [MESSAGES_TYPES.WELCOME, MESSAGES_TYPES.DAILY]
+          [Op.in]: [MESSAGES_TYPES.WELCOME, MESSAGES_TYPES.DAILY],
         },
       },
     });

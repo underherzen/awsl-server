@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         type: DataTypes.STRING,
       },
+      position: {
+        allowNull: true,
+        type: DataTypes.INTEGER,
+      },
       url_safe_name: {
         allowNull: false,
         type: DataTypes.STRING,
