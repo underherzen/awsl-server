@@ -34,10 +34,6 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         type: DataTypes.STRING(2048),
       },
-      position: {
-        allowNull: true,
-        type: DataTypes.INTEGER,
-      },
       credentials: {
         allowNull: false,
         type: DataTypes.STRING,
