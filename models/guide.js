@@ -14,10 +14,6 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         type: DataTypes.STRING,
       },
-      position: {
-        allowNull: true,
-        type: DataTypes.INTEGER,
-      },
       url_safe_name: {
         allowNull: false,
         type: DataTypes.STRING,
@@ -37,6 +33,10 @@ module.exports = (sequelize, DataTypes) => {
       overview: {
         allowNull: false,
         type: DataTypes.STRING(2048),
+      },
+      position: {
+        allowNull: true,
+        type: DataTypes.INTEGER,
       },
       credentials: {
         allowNull: false,
