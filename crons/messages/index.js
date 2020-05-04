@@ -42,9 +42,8 @@ const sendUndeliveredDailyMessages = async () => {
     });
     await Promise.all(dailyUndeliveredMessages.map((message) => sendUndeliveredMessage(message, client)));
   } catch (e) {
-    console.log(e)
+    console.log(e);
   }
-
 };
 
 const sendFirstDailySms = async () => {
@@ -114,9 +113,8 @@ const sendFirstDailySms = async () => {
       })
     );
   } catch (e) {
-    console.log(e)
+    console.log(e);
   }
-
 };
 
 const dailyText = async () => {
@@ -324,9 +322,8 @@ const sendDiscountSms = async () => {
       })
     );
   } catch (e) {
-    console.log(e)
+    console.log(e);
   }
-
 };
 
 const sendRemindMessages = async () => {
@@ -365,9 +362,8 @@ const sendRemindMessages = async () => {
       })
     );
   } catch (e) {
-    console.log(e)
+    console.log(e);
   }
-
 };
 /**
  * Sends first daily sms in 5 minutes for users who just has selected its first guide and started immediately
@@ -438,9 +434,8 @@ const sendMessageAfterFirstDailyMessage = async () => {
       })
     );
   } catch (e) {
-    console.log(e)
+    console.log(e);
   }
-
 };
 
 /**
@@ -486,7 +481,7 @@ const sendAdditionalSms = async () => {
             return;
           }
           const firstName = user.first_name.trim();
-          const messageText = `Hi ${firstName}! Did you know that there’s a 95% chance you’ll complete this course if you have an Accountabilibuddy? So invite a friend, your team, your family to take this journey with you! Use this link to gift them 21 days free: http://goliveitup.com?_from=buddy`;
+          const messageText = `Hi ${firstName}! Did you know that there’s a 95% chance you’ll complete this course if you have an Accountabilibuddy? So invite a friend, your team, your family to take this journey with you! Use this link to gift them 21 days free: http://goliveitup.com/?_from=buddy`;
 
           const messageObject = {
             from: await getTwilioNumber(client, user.phone),
@@ -513,9 +508,8 @@ const sendAdditionalSms = async () => {
       })
     );
   } catch (e) {
-    console.log(e)
+    console.log(e);
   }
-
 };
 
 module.exports = {
