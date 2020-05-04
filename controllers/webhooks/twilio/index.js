@@ -111,7 +111,7 @@ const replyWebhook = async (req, res, next) => {
         });
       }
       message.body(messageBody);
-      res.writeHead(200, { 'Content-type': 'text/vcard', 'Content-Disposition': 'inline' });
+      res.writeHead(200, { 'Content-type': 'text/xml', 'Content-Disposition': 'inline' });
       res.end(twiml.toString());
       return;
     } else if (sentCommand === REPLY_COMMANDS.COMMUNITY) {
