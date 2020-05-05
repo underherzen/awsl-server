@@ -6,7 +6,7 @@ const { getTwilioNumber } = require('../../../modules/twilio');
 const urlShortener = require('../../../modules/urlShortener');
 const shortener = new urlShortener();
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-const axios = require('axios');
+const fetch = require('node-fetch');
 
 const twilioStatusCallback = async (req, res, next) => {
   try {
@@ -74,7 +74,7 @@ const replyWebhook = async (req, res, next) => {
           status: MESSAGES_STATUSES.SENT,
         });
         let from = await getTwilioNumber(client, user.phone);
-        await axios.post(
+        await fetch(
           `https://api.twilio.com/2010-04-01/Accounts/${
             process.env.TWILIO_ACCOUNT_SID
           }/Messages.json?Body=${REPLY_TEXTS.YES.replace('{1}', facebookUrl)}&MediaUrl=${media}&From=${from}&To=${
@@ -88,6 +88,7 @@ const replyWebhook = async (req, res, next) => {
               'Cache-Control': 'no-cache',
               Authorization: `Basic ${process.env.TWILIO_AUTH_TOKEN}`,
             },
+            method: 'POST',
           }
         );
         res.sendStatus(200);
