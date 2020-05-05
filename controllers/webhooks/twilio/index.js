@@ -6,6 +6,7 @@ const { getTwilioNumber } = require('../../../modules/twilio');
 const urlShortener = require('../../../modules/urlShortener');
 const shortener = new urlShortener();
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const axios = require('axios');
 
 const twilioStatusCallback = async (req, res, next) => {
   try {
@@ -36,9 +37,9 @@ const replyWebhook = async (req, res, next) => {
 
     const body = req.body;
     let sentCommand = body.Body.trim().toUpperCase();
-    // if (sentCommand.indexOf(' ') > -1) {
-    //   sentCommand = sentCommand.split(' ')[0]
-    // }
+    if (sentCommand.indexOf(' ') > -1) {
+      sentCommand = sentCommand.split(' ')[0];
+    }
     let messageBody;
 
     const authCommands = [REPLY_COMMANDS.YES, REPLY_COMMANDS.HELP, REPLY_COMMANDS.STOP, REPLY_COMMANDS.UNSTOP];
@@ -55,9 +56,15 @@ const replyWebhook = async (req, res, next) => {
       const isSentFromInternational = (await getTwilioNumber(client, user.phone)) === process.env.INTERNATIONAL_PHONE;
 
       if (sentCommand === REPLY_COMMANDS.YES) {
+        let media;
+        let filename;
         if (isSentFromInternational) {
+          media = `${process.env.BASE_URL}/docs/contact-card-international.vcf`;
+          filename = 'contact-card-international.vcf';
           message.media(`${process.env.BASE_URL}/docs/contact-card-international.vcf`);
         } else {
+          media = `${process.env.BASE_URL}/docs/contact-card.vcf`;
+          filename = 'contact-card.vcf';
           message.media(`${process.env.BASE_URL}/docs/contact-card.vcf`);
         }
         messageBody = REPLY_TEXTS.YES.replace('{1}', facebookUrl);
@@ -66,6 +73,25 @@ const replyWebhook = async (req, res, next) => {
           type: MESSAGES_TYPES.REPLY_YES,
           status: MESSAGES_STATUSES.SENT,
         });
+        let from = await getTwilioNumber(client, user.phone);
+        await axios.post(
+          `https://api.twilio.com/2010-04-01/Accounts/${
+            process.env.TWILIO_ACCOUNT_SID
+          }/Messages.json?Body=${REPLY_TEXTS.YES.replace('{1}', facebookUrl)}&MediaUrl=${media}&From=${from}&To=${
+            user.phone
+          }`,
+          {
+            headers: {
+              'Content-Type': 'inline',
+              filename: filename,
+              'Content-Disposition': 'text/x-vcard',
+              'Cache-Control': 'no-cache',
+              Authorization: `Basic ${process.env.TWILIO_AUTH_TOKEN}`,
+            },
+          }
+        );
+        res.sendStatus(200);
+        return;
       } else if (sentCommand === REPLY_COMMANDS.STOP) {
         await User.update(
           {
