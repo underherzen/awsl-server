@@ -82,8 +82,9 @@ const replyWebhook = async (req, res, next) => {
           }`,
           {
             headers: {
-              'Content-Type': 'inline',
-              'Content-Disposition': 'text/x-vcard',
+              'Content-Type': 'text/x-vcard',
+              filename: filename,
+              'Content-Disposition': 'inline',
               'Cache-Control': 'no-cache',
               Authorization: `Basic ${process.env.TWILIO_AUTH_TOKEN}`,
             },
