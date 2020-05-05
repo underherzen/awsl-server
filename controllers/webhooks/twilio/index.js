@@ -53,11 +53,13 @@ const replyWebhook = async (req, res, next) => {
       }
 
       const isSentFromInternational = (await getTwilioNumber(client, user.phone)) === process.env.INTERNATIONAL_PHONE;
-
+      let media;
       if (sentCommand === REPLY_COMMANDS.YES) {
         if (isSentFromInternational) {
+          media = `${process.env.BASE_URL}/docs/contact-card-international.vcf`;
           message.media(`${process.env.BASE_URL}/docs/contact-card-international.vcf`);
         } else {
+          media = `${process.env.BASE_URL}/docs/contact-card.vcf`;
           message.media(`${process.env.BASE_URL}/docs/contact-card.vcf`);
         }
         messageBody = REPLY_TEXTS.YES.replace('{1}', facebookUrl);
@@ -66,6 +68,25 @@ const replyWebhook = async (req, res, next) => {
           type: MESSAGES_TYPES.REPLY_YES,
           status: MESSAGES_STATUSES.SENT,
         });
+        await client.sendSms(
+          {
+            to: user.phone,
+            from: await getTwilioNumber(client, user.phone),
+            body: REPLY_TEXTS.YES.replace('{1}', facebookUrl),
+            mediaUrl: media,
+            MediaContentType: 'inline',
+          },
+          function (err, responseData) {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log(responseData.from);
+              console.log(responseData.body);
+            }
+          }
+        );
+
+        res.sendStatus(200);
       } else if (sentCommand === REPLY_COMMANDS.STOP) {
         await User.update(
           {
