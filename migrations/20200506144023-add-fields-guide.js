@@ -4,12 +4,12 @@ module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(t => {
       return Promise.all([
-        queryInterface.addColumn('Guide', 'is_active', {
+        queryInterface.addColumn('guides', 'is_active', {
           allowNull: false,
           type: Sequelize.DataTypes.BOOLEAN,
           defaultValue: true,
         }, { transaction: t }),
-        queryInterface.addColumn('Guide', 'position', {
+        queryInterface.addColumn('guides', 'position', {
           type: Sequelize.DataTypes.INTEGER,
         }, { transaction: t })
       ]);
@@ -18,8 +18,8 @@ module.exports = {
   down: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(t => {
       return Promise.all([
-        queryInterface.removeColumn('Guide', 'is_active', { transaction: t }),
-        queryInterface.removeColumn('Guide', 'position', { transaction: t })
+        queryInterface.removeColumn('guides', 'is_active', { transaction: t }),
+        queryInterface.removeColumn('guides', 'position', { transaction: t })
       ]);
     });
   }
