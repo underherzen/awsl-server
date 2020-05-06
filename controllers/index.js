@@ -1,6 +1,7 @@
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
 const { User, Subscription } = require('../models');
 const { retrieveToken } = require('../modules/helpers');
+const { USER_TYPES } = require('../constants');
 const moment = require('moment');
 
 const isUserActive = (req, res, next) => {
@@ -35,6 +36,18 @@ const userIsAuth = async (req, res, next) => {
     }
     req.user = user.dataValues;
     next();
+  } catch (e) {
+    next(e);
+  }
+};
+
+const userIsAdmin = async (req, res, next) => {
+  try {
+    if (req.user.type === USER_TYPES.ADMIN) {
+      next();
+      return;
+    }
+    res.sendStatus(401);
   } catch (e) {
     next(e);
   }
@@ -90,6 +103,7 @@ const retrieveAndUpdateUserSubscription = async (req, res, next) => {
 module.exports = {
   isUserActive,
   userIsAuth,
+  userIsAdmin,
   userHasSubscription,
   retrieveAndUpdateUserSubscription,
 };
