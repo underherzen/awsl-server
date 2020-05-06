@@ -6,11 +6,11 @@ module.exports = {
       return Promise.all([
         queryInterface.addColumn('Guide', 'is_active', {
           allowNull: false,
-          type: DataTypes.BOOLEAN,
+          type: Sequelize.DataTypes.BOOLEAN,
           defaultValue: true,
         }, { transaction: t }),
         queryInterface.addColumn('Guide', 'position', {
-          type: DataTypes.INTEGER,
+          type: Sequelize.DataTypes.INTEGER,
         }, { transaction: t })
       ]);
     });
