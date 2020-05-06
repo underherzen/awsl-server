@@ -43,7 +43,7 @@ const userIsAuth = async (req, res, next) => {
 
 const userIsAdmin = async (req, res, next) => {
   try {
-    if (req.user.type === USER_TYPES.ADMIN || req.user.type === USER_TYPES.USER) {
+    if (req.user.type === USER_TYPES.ADMIN) {
       next();
       return;
     }
