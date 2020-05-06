@@ -66,6 +66,14 @@ module.exports = (sequelize, DataTypes) => {
           this.setDataValue('bullets', value.join('_;_'));
         },
       },
+      is_active: {
+        allowNull: false,
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
+      position: {
+        type: DataTypes.INTEGER,
+      },
       created_at: {
         allowNull: false,
         type: DataTypes.DATE,
