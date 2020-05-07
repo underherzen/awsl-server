@@ -20,7 +20,8 @@ const loadUsers = async (req, res, next) => {
                   ) AS status,
                   (
                     SELECT cancel_at_period_end FROM subscriptions WHERE user_id = u.id
-                  ) AS cancel_at_period_end
+                  ) AS cancel_at_period_end,
+                  u.created_at
                   FROM users u;`;
 
     const [users] = await models.sequelize.query(query);
