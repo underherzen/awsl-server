@@ -36,16 +36,19 @@ const checkUserStartDay = async () => {
       })
     );
   } catch (e) {
-    console.log(e)
+    console.log(e);
   }
-
 };
 
 const subscriptionNotifications = async () => {
   try {
     const subscriptions = await Subscription.findAll({
       where: {
-        [Op.or]: [{ status: STRIPE_STATUSES.CANCELED }, { status: STRIPE_STATUSES.TRIALING }],
+        [Op.or]: [
+          { status: STRIPE_STATUSES.CANCELED },
+          { status: STRIPE_STATUSES.TRIALING },
+          { status: STRIPE_STATUSES.PAST_DUE },
+        ],
         [Op.or]: [{ is_free_reg: null }, { is_free_reg: false }],
         last4: null,
       },
@@ -53,19 +56,31 @@ const subscriptionNotifications = async () => {
     // console.log(subscriptions);
     await Promise.all(
       subscriptions.map(async (subscription) => {
-        if (subscription.status === STRIPE_STATUSES.CANCELED) {
-          return SubscriptionNotification.update(
-            {
-              discount_modal: false,
-              end_of_subscription: true,
-              last_trial_day: false,
-            },
-            {
-              where: {
-                user_id: subscription.user_id,
+        if (subscription.status === STRIPE_STATUSES.CANCELED || subscription.status === STRIPE_STATUSES.PAST_DUE) {
+          return Promise.all([
+            SubscriptionNotification.update(
+              {
+                discount_modal: false,
+                end_of_subscription: true,
+                last_trial_day: false,
               },
-            }
-          );
+              {
+                where: {
+                  user_id: subscription.user_id,
+                },
+              }
+            ),
+            User.update(
+              {
+                is_active: false,
+              },
+              {
+                where: {
+                  id: subscription.user_id,
+                },
+              }
+            ),
+          ]);
         }
 
         const diff = moment(subscription.next_payment).diff(moment(), 'd');
@@ -112,9 +127,8 @@ const subscriptionNotifications = async () => {
       })
     );
   } catch (e) {
-    console.log(e)
+    console.log(e);
   }
-
 };
 
 module.exports = {
