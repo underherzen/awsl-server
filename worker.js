@@ -24,7 +24,7 @@ cron.schedule(CRON_INTERVALS.EVERY1HOUR, checkUserStartDay);
 cron.schedule(CRON_INTERVALS.EVERY5MINUTES, sendFirstDailySms);
 
 // send undelivered messages
-cron.schedule(CRON_INTERVALS.EVERY1HOUR, sendUndeliveredDailyMessages);
+//cron.schedule(CRON_INTERVALS.EVERY1HOUR, sendUndeliveredDailyMessages);
 
 cron.schedule(CRON_INTERVALS.EVERY10MINUTES, subscriptionNotifications);
 
