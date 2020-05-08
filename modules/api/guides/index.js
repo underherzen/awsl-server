@@ -1,6 +1,6 @@
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const { getTwilioNumber, sendInternationalSms } = require('../../twilio');
-const { User, Message } = require('../../../models');
+const { Message } = require('../../../models');
 const { MESSAGES_TYPES } = require('../../../constants');
 
 const sendWelcomeMessage = async (user) => {
@@ -13,7 +13,7 @@ const sendWelcomeMessage = async (user) => {
       statusCallback: `${process.env.API_URL}/webhooks/twilio/status-callback/`,
     };
     const response = await sendInternationalSms(client, messageObject);
-    const message = await Message.create({
+    await Message.create({
       user_id: user.id,
       from: messageObject.from,
       to: messageObject.to,

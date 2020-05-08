@@ -1,4 +1,4 @@
-const { User, Subscription } = require('../../../../models');
+const { User } = require('../../../../models');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
 const { toValidPhone } = require('../../../../modules/api/auth');
 const { userToFront } = require('../../../../modules/helpers');

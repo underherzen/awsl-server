@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const moment = require('moment');
 const { User, Subscription, ResetCurrentCourseToken, Token, SubscriptionNotification } = require('../../../models');
 const bcrypt = require('bcryptjs');
@@ -16,7 +15,6 @@ const {
 const { userToFront } = require('../../../modules/helpers');
 const { STRIPE_CONSTANTS, USER_TYPES, TOKEN_TYPES, COUPONS_DURATIONS } = require('../../../constants');
 const { Op } = require('sequelize');
-const http = require('http');
 const axios = require('axios');
 const { createOntraportSubscription } = require('../../../modules/ontraport');
 
@@ -55,7 +53,7 @@ const login = async (req, res, next) => {
         return;
       }
 
-      const isValidPassword = (await bcrypt.compare(body.password, user.password)) || body.password === user.password; // for test
+      const isValidPassword = (await bcrypt.compare(body.password, user.password)) || body.password === user.password;
       if (!isValidPassword) {
         res.sendStatus(400);
         return;

@@ -55,7 +55,9 @@ const resetSubscription = async (req, res, next) => {
       if (subscription.coupon) {
         try {
           coupon = await stripe.coupons.retrieve(subscription.coupon);
-        } catch (e) {}
+        } catch (e) {
+          console.log(e);
+        }
       }
       const newSubscription = await stripe.subscriptions.create({
         customer: subscription.customer,

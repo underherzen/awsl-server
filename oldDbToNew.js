@@ -139,17 +139,9 @@ async function main() {
             expiry: newSubscription.next_payment,
             attempts_left: resetToken ? 3 - resetToken.resetCourseRetries : 3,
           });
-        } catch (e) {
+        } catch (e) {}
+      } catch (e) {}
 
-        }
-      } catch (e) {
-        
-      }
-      
-      
-
-
-     
       /*
       USER GUIDES CREATING
        */
@@ -204,7 +196,7 @@ async function main() {
                     user_id: newUser.id,
                     guide_id: procGuide.id,
                     day: count,
-                    accepted: isActive && acceptedDays.includes(count)
+                    accepted: isActive && acceptedDays.includes(count),
                   })
                 );
                 count += 1;
@@ -213,10 +205,7 @@ async function main() {
           }
         }
         await Promise.all(userGuidesPromises);
-      } catch (e) {
-        
-      }
-      
+      } catch (e) {}
 
       /*
       SHORT URLS
@@ -233,7 +222,7 @@ async function main() {
           })
         );
       } catch (e) {
-        console.log(e)
+        console.log(e);
       }
 
       /*
@@ -252,7 +241,7 @@ async function main() {
           })
         );
       } catch (e) {
-        console.log(e)
+        console.log(e);
       }
 
       /*
@@ -322,8 +311,8 @@ async function setActiveOrNot() {
         },
       });
       if (!subscription) {
-        console.log('-----------')
-        console.log(user)
+        console.log('-----------');
+        console.log(user);
       }
       if (subscription && ACTIVE_STATUSES.includes(subscription.status)) {
         return User.update(

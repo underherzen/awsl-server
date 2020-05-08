@@ -22,7 +22,7 @@ const getTimezones = (sendTime) => {
   const tz = offsetHours < 0 ? offsetHours + 24 : offsetHours - 24;
 
   let offsetMinutes = date.getUTCMinutes();
-  offsetMinutes = offsetMinutes - offsetMinutes % 5;
+  offsetMinutes = offsetMinutes - (offsetMinutes % 5);
   const timezones = [offsetHours, tz]
     .filter((el) => Math.abs(el) <= 12)
     .map((el) => (el < 0 ? 60 * el + offsetMinutes : 60 * el - offsetMinutes));
