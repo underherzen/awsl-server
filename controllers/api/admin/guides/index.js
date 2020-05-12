@@ -12,7 +12,7 @@ const loadGuides = async (req, res, next) => {
 const updateGuide = async (req, res, next) => {
   const { id } = req.params;
   const { guide } = req.body;
-  console.log(guide);
+
   try {
     await Guide.update(
       {
