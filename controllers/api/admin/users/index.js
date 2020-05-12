@@ -10,7 +10,7 @@ stripe.setTimeout(10000);
 
 const loadUsers = async (req, res, next) => {
   try {
-    const query = `SELECT u.id, u.email, u.first_name, u.last_name, u.phone, g.name as 'current_guide', 
+    const query = `SELECT u.id, u.email, u.first_name, u.last_name, u.phone, u.can_receive_texts, g.name as 'current_guide', 
                           ud.day as 'current_guide_day', s.status, s.next_payment, u.created_at FROM users u
                    LEFT JOIN guides g ON g.id=u.guide_id
                    LEFT JOIN user_guides ud ON ud.user_id=u.id and ud.guide_id=g.id
@@ -56,6 +56,7 @@ const updateUser = async (req, res, next) => {
           email: user.email,
           first_name: user.first_name,
           phone: user.phone,
+          can_receive_texts: user.can_receive_texts,
         },
         {
           where: {
