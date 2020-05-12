@@ -7,11 +7,11 @@ const {
   retrieveToken,
   updateToken,
   retrieveCoupon,
-  toValidPhone,
   googleCheckToken,
   fbCheckToken,
   generateResetToken,
 } = require('../../../modules/api/auth');
+const { toValidPhone } = require('../../../modules/twilio');
 const { userToFront } = require('../../../modules/helpers');
 const { STRIPE_CONSTANTS, USER_TYPES, TOKEN_TYPES, COUPONS_DURATIONS } = require('../../../constants');
 const { Op } = require('sequelize');

@@ -55,18 +55,6 @@ const retrieveCoupon = async (coupon) => {
   }
 };
 
-const toValidPhone = (phone, countryCode = 'US') => {
-  let userPhone = libphonenumber.parsePhoneNumberFromString(phone);
-  if (userPhone && userPhone.isValid()) {
-    return userPhone.number;
-  }
-  userPhone = libphonenumber.parsePhoneNumberFromString(phone, countryCode);
-  if (userPhone && userPhone.isValid()) {
-    return userPhone.number;
-  }
-  return null;
-};
-
 const googleCheckToken = async (token) => {
   try {
     const url = `https://www.googleapis.com/oauth2/v2/tokeninfo?id_token=${token}`;
@@ -127,7 +115,6 @@ module.exports = {
   retrieveToken,
   updateToken,
   retrieveCoupon,
-  toValidPhone,
   googleCheckToken,
   fbCheckToken,
   generateResetToken,
