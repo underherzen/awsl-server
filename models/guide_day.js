@@ -13,6 +13,10 @@ module.exports = (sequelize, DataTypes) => {
       guide_id: {
         allowNull: false,
         type: DataTypes.INTEGER,
+        references: {
+          model: 'guides',
+          key: 'id',
+        },
       },
       day: {
         allowNull: false,
