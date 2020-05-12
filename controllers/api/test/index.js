@@ -1,9 +1,6 @@
-const { User } = require('../../../models');
-
 const testConnection = async (req, res, next) => {
   try {
-    const users = await User.findAll();
-    res.send(users);
+    res.sendStatus(200);
   } catch (e) {
     next(e);
   }
