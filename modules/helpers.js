@@ -10,6 +10,7 @@ const {
 } = require('../models');
 const { TOKEN_TYPES } = require('../constants');
 const axios = require('axios');
+const moment = require('moment');
 const _ = require('lodash');
 
 const retrieveToken = async (headers) => {
@@ -144,6 +145,11 @@ const parseUrlEncode = (str) => {
   return body;
 };
 
+const calculateTrialDays = ({ status, next_payment }) => {
+  const currentDate = Date.now();
+  return status === 'trialing' ? moment(next_payment).diff(currentDate, 'days') : 0;
+};
+
 module.exports = {
   retrieveToken,
   userToFront,
@@ -151,4 +157,5 @@ module.exports = {
   imageExists,
   generateSmsAuthToken,
   parseUrlEncode,
+  calculateTrialDays,
 };

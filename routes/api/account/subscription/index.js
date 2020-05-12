@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const subscriptionController = require('../../../../controllers/api/account/subscription');
-const { retrieveAndUpdateUserSubscription } = require('../../../../controllers');
 
 router.post('/pause_subscription', subscriptionController.pauseSubscription);
 

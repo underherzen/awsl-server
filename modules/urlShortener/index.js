@@ -1,4 +1,3 @@
-const moment = require('moment');
 const { ShortUrl } = require('../../models');
 
 class urlShortener {
@@ -25,11 +24,7 @@ class urlShortener {
     shortStr = this.genRandomString(7);
     const base = process.env.BASE_URL ? process.env.BASE_URL : 'goliveitup.com';
     const host =
-      base.indexOf('dev') > -1
-        ? 'dev.goliveitup.com'
-        : base.indexOf('goliveitup') > -1
-        ? 'goliveitup.com'
-        : base;
+      base.indexOf('dev') > -1 ? 'dev.goliveitup.com' : base.indexOf('goliveitup') > -1 ? 'goliveitup.com' : base;
     let doNext = true;
     while (doNext) {
       const existingShortUrl = await ShortUrl.findOne({

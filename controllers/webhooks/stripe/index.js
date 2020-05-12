@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const moment = require('moment');
 const { Subscription, User, ResetCurrentCourseToken, SubscriptionNotification } = require('../../../models');
-const { ACTIVE_STATUSES, INACTIVE_STATUSES, COUPONS_DURATIONS } = require('./../../../constants');
+const { ACTIVE_STATUSES, COUPONS_DURATIONS } = require('./../../../constants');
 
 const subscriptionUpdateWebhook = async (req, res, next) => {
   try {

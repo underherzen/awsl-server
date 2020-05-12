@@ -8,3 +8,5 @@ package-lock.json
 .idea
 ./.idea
 ./config
+dist
+build

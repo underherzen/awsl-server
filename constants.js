@@ -85,7 +85,8 @@ const CRON_INTERVALS = {
 };
 
 const REPLY_TEXTS = {
-  YES: `Let’s go! First challenge is coming soon! Start by saving us in your phone as LiveItUp (we’re besties now!). Done? Great! Now, click the link to join the LiveItUp community. (step 2 of 2): {1}`,
+  YES:
+    'Let’s go! First challenge is coming soon! Start by saving us in your phone as LiveItUp (we’re besties now!). Done? Great! Now, click the link to join the LiveItUp community. (step 2 of 2): {1}',
 
   STOP:
     'We’re sad to see you go {0}! This means that you won’t be receiving challenges via text from LiveItUp.' +

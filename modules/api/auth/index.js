@@ -1,8 +1,6 @@
-const bcrypt = require('bcryptjs');
 const moment = require('moment');
-const _ = require('lodash');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
-const { User, Session, ResetCurrentCourseToken } = require('../../../models');
+const { Session, ResetCurrentCourseToken } = require('../../../models');
 const libphonenumber = require('libphonenumber-js');
 const axios = require('axios');
 const { generateRandString } = require('../../helpers');
@@ -91,7 +89,7 @@ const fbCheckToken = async (token) => {
     const fields = ['first_name', 'last_name', 'email'].join(',');
     const url = `https://graph.facebook.com/me?access_token=${token}&fields=${fields}`;
     const response = await axios.get(url);
-    console.log(response.data)
+    console.log(response.data);
     if (!response.data || !response.data.id) {
       return null;
     }

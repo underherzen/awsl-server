@@ -1,7 +1,7 @@
 const { Message, User } = require('../../../models');
 const { REPLY_TEXTS, REPLY_COMMANDS, MESSAGES_TYPES, MESSAGES_STATUSES } = require('../../../constants');
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
-const { parseUrlEncode, generateSmsAuthToken } = require('../../../modules/helpers');
+const { generateSmsAuthToken } = require('../../../modules/helpers');
 const { getTwilioNumber } = require('../../../modules/twilio');
 const urlShortener = require('../../../modules/urlShortener');
 const shortener = new urlShortener();

@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const usersController = require('../../../controllers/api/admin/users');
-const guidesController = require('../../../controllers/api/admin/guides');
+const usersRoutes = require('./users');
+const guidesRoutes = require('./guides');
 const { userIsAuth, userIsAdmin } = require('../../../controllers');
 
 router.use('/*', userIsAuth, userIsAdmin);
 
-router.get('/users', usersController.loadUsers);
-router.get('/guides', guidesController.loadGuides);
+router.use('/users', usersRoutes);
+router.use('/guides', guidesRoutes);
 
 module.exports = router;

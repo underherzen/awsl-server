@@ -1,10 +1,8 @@
 const { userToFront } = require('../../../modules/helpers');
 const { sendWelcomeMessage } = require('../../../modules/api/guides');
-const { getTwilioNumber, sendDailyText } = require('../../../modules/twilio');
+const { sendDailyText } = require('../../../modules/twilio');
 const moment = require('moment');
 const { Op } = require('sequelize');
-const { retrieveToken } = require('../../../modules/api/auth');
-const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const { UserGuide, User, UserGuideDay, Guide, GuideDay, ResetCurrentCourseToken, Message } = require('../../../models');
 const { MESSAGES_TYPES } = require('../../../constants');
 const _ = require('lodash');
@@ -13,10 +11,9 @@ const loadGuides = async (req, res, next) => {
   try {
     const guides = await Guide.findAll({
       where: {
-        id: {
-          [Op.ne]: 2, // THIS IS FUCKING PIECE OF SHIT TODO: MAKE ATTRIBUTE ACTIVE
-        },
+        is_active: true,
       },
+      order: [['position', 'ASC']],
     });
 
     res.send(guides);
@@ -334,7 +331,7 @@ const selectPrevious = async (req, res, next) => {
     });
 
     if (!userGuide) {
-      res.status(400).send({ error: "It's not your previous guide!" });
+      res.status(400).send({ error: 'It is not your previous guide!' });
       return;
     }
 

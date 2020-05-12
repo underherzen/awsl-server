@@ -1,9 +1,9 @@
 require('dotenv').config();
-const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
-const moment = require('moment');
-const {UserGuide, UserGuideDay, Token} = require('./models')
+//const stripe = require('stripe')(process.env.STRIPE_PRIVATE);
+//const moment = require('moment');
+const { Token } = require('./models');
 console.log(process.env.STRIPE_PRIVATE);
-const {TOKEN_TYPES} = require('./constants')
+const { TOKEN_TYPES } = require('./constants');
 
 // let dayToAssign = 21;
 //
@@ -43,10 +43,10 @@ const {TOKEN_TYPES} = require('./constants')
 //   .catch(e => console.log(e))
 Token.findAll({
   where: {
-    type: TOKEN_TYPES.SMS_AUTH
-  }
-}).then(response => {
-  console.log(response.length)
-  const uniqueTokens = [...new Set(response)]
-  console.log(uniqueTokens.length)
-})
+    type: TOKEN_TYPES.SMS_AUTH,
+  },
+}).then((response) => {
+  console.log(response.length);
+  const uniqueTokens = [...new Set(response)];
+  console.log(uniqueTokens.length);
+});

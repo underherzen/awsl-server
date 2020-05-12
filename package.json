@@ -8,7 +8,6 @@
     "start:local": "NODE_ENV=development nodemon ./bin/www",
     "prettify": " npx prettier --write '**/*.js'",
     "lint": "eslint .",
-    "precommit": "lint-staged",
     "dbscript": "node ./dbscript.js",
     "worker": "node ./worker.js",
     "dev-worker": "NODE_ENV=development node ./worker.js"
@@ -46,11 +45,15 @@
     "prettier": "^2.0.4",
     "sequelize-cli": "^5.5.1"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
   "lint-staged": {
-    "*.{js}": [
+    "*.js": [
       "npm run prettify",
-      "npm run lint",
-      "git add"
+      "eslint --cache"
     ]
   }
 }
