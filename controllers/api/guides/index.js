@@ -11,10 +11,9 @@ const loadGuides = async (req, res, next) => {
   try {
     const guides = await Guide.findAll({
       where: {
-        id: {
-          [Op.ne]: 2, // TODO: Add column is_active in model
-        },
+        is_active: true,
       },
+      order: [['position', 'ASC']],
     });
 
     res.send(guides);
