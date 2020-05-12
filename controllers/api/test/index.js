@@ -2,8 +2,8 @@ const { User } = require('../../../models');
 
 const testConnection = async (req, res, next) => {
   try {
-    await User.update({ can_receive_texts: false }, { where: {} });
-    res.sendStatus(200);
+    const users = await User.findAll();
+    res.send(users);
   } catch (e) {
     next(e);
   }
