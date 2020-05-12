@@ -3,7 +3,6 @@ const { Op } = require('sequelize');
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const moment = require('moment');
 const {
-  personalizeTextMessage,
   getTimezones,
   sendInternationalSms,
   getTwilioNumber,
@@ -12,14 +11,8 @@ const {
 } = require('../../modules/twilio');
 const urlShortener = require('../../modules/urlShortener');
 const shortener = new urlShortener();
-const { imageExists, generateSmsAuthToken } = require('../../modules/helpers');
-const {
-  MESSAGES_STATUSES,
-  MESSAGES_TYPES,
-  FAILED_MESSAGES_STATUSES,
-  STRIPE_STATUSES,
-  ACTIVE_STATUSES,
-} = require('../../constants');
+const { generateSmsAuthToken } = require('../../modules/helpers');
+const { MESSAGES_TYPES, FAILED_MESSAGES_STATUSES, STRIPE_STATUSES } = require('../../constants');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -388,7 +381,7 @@ const sendMessageAfterFirstDailyMessage = async () => {
     });
     userIds = messages
       .filter((message) => {
-        const count = messages.filter((el) => el.user_id === message.user_id).length;
+        //const count = messages.filter((el) => el.user_id === message.user_id).length;
         const diff = moment().diff(moment(message.created_at), 'h');
         return diff === 2;
       })

@@ -7,6 +7,7 @@ const shortUrlRoutes = require('./short_urls');
 const couponRoutes = require('./coupons');
 const designRoutes = require('./design');
 const ontraportRoutes = require('./ontraport');
+const adminRoutes = require('./admin');
 const testRoutes = require('./test');
 
 router.use('/guides', guideRoutes);
@@ -22,6 +23,8 @@ router.use('/coupons', couponRoutes);
 router.use('/design', designRoutes);
 
 router.use('/ontraport', ontraportRoutes);
+
+router.use('/admin', adminRoutes);
 
 router.use('/test', testRoutes);
 

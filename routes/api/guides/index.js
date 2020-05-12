@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { isUserActive, userIsAuth } = require('../../../controllers');
+const { userIsAuth } = require('../../../controllers');
 const guideController = require('../../../controllers/api/guides');
 
 // public methods

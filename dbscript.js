@@ -64,8 +64,8 @@ Promise.all(tmp).then((response) => {
       }
       Promise.all(tmp)
         .then((response) => {
-          console.log(Date.now() - date)
-          console.log(response)
+          console.log(Date.now() - date);
+          console.log(response);
         })
         .catch((e) => console.log(e));
     })

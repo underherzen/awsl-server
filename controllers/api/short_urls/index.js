@@ -1,4 +1,3 @@
-const { ShortUrl } = require('../../../models');
 const urlShortener = require('../../../modules/urlShortener');
 const shortener = new urlShortener();
 

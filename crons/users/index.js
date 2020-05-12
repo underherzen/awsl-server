@@ -1,17 +1,7 @@
 const { User, Subscription, SubscriptionNotification } = require('../../models');
 const moment = require('moment');
 const { Op } = require('sequelize');
-const { STRIPE_STATUSES, LAST_DEFAULT_TRIAL_DAY_HOURS, DISCOUNT_DAY_HOURS } = require('../../constants');
-
-const checkUsersSubscriptions = async () => {
-  const users = await User.findAll({
-    where: {},
-  });
-};
-
-`
-SELECT * FROM users AS u, subscriptions AS s WHERE u.is_active=false AND u.start_immediately=false AND id IN (SELECT id FROM subscriptions WHERE status=trialing)
-`;
+const { STRIPE_STATUSES } = require('../../constants');
 
 const checkUserStartDay = async () => {
   try {
@@ -36,9 +26,8 @@ const checkUserStartDay = async () => {
       })
     );
   } catch (e) {
-    console.log(e)
+    console.log(e);
   }
-
 };
 
 const subscriptionNotifications = async () => {

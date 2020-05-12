@@ -4,7 +4,7 @@ const cron = require('node-cron');
 const {
   dailyText,
   sendFirstDailySms,
-  sendUndeliveredDailyMessages,
+  //sendUndeliveredDailyMessages,
   sendRemindMessages,
   sendDiscountSms,
   sendMessageAfterFirstDailyMessage,

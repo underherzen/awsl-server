@@ -4,6 +4,7 @@ const shortener = new urlShortener();
 const { generateSmsAuthToken, imageExists } = require('../helpers');
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const { MESSAGES_TYPES } = require('../../constants');
+const libphonenumber = require('libphonenumber-js');
 
 const personalizeTextMessage = (user, textMessage) => {
   user.firstName = user.first_name;
@@ -22,7 +23,7 @@ const getTimezones = (sendTime) => {
   const tz = offsetHours < 0 ? offsetHours + 24 : offsetHours - 24;
 
   let offsetMinutes = date.getUTCMinutes();
-  offsetMinutes = offsetMinutes - offsetMinutes % 5;
+  offsetMinutes = offsetMinutes - (offsetMinutes % 5);
   const timezones = [offsetHours, tz]
     .filter((el) => Math.abs(el) <= 12)
     .map((el) => (el < 0 ? 60 * el + offsetMinutes : 60 * el - offsetMinutes));
@@ -152,6 +153,18 @@ const sendDailyText = async (user, guideDay, dayToAssign, guide, firstDailyText 
   }
 };
 
+const toValidPhone = (phone, countryCode = 'US') => {
+  let userPhone = libphonenumber.parsePhoneNumberFromString(phone);
+  if (userPhone && userPhone.isValid()) {
+    return userPhone.number;
+  }
+  userPhone = libphonenumber.parsePhoneNumberFromString(phone, countryCode);
+  if (userPhone && userPhone.isValid()) {
+    return userPhone.number;
+  }
+  return null;
+};
+
 module.exports = {
   personalizeTextMessage,
   getTimezones,
@@ -159,4 +172,5 @@ module.exports = {
   getTwilioNumber,
   sendUndeliveredMessage,
   sendDailyText,
+  toValidPhone,
 };
