@@ -1,36 +1,29 @@
+const asyncHandler = require('express-async-handler');
 const { Guide } = require('../../../../models');
 
-const loadGuides = async (req, res, next) => {
-  try {
-    const guides = await Guide.findAll();
-    res.send({ guides });
-  } catch (e) {
-    next(e);
-  }
-};
+const loadGuides = asyncHandler(async (req, res, next) => {
+  const guides = await Guide.findAll();
+  res.send({ guides });
+});
 
-const updateGuide = async (req, res, next) => {
+const updateGuide = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const { guide } = req.body;
 
-  try {
-    await Guide.update(
-      {
-        ...guide,
-        position: +guide.position,
+  await Guide.update(
+    {
+      ...guide,
+      position: +guide.position,
+    },
+    {
+      where: {
+        id,
       },
-      {
-        where: {
-          id,
-        },
-      }
-    );
+    }
+  );
 
-    return res.sendStatus(200);
-  } catch (e) {
-    next(e);
-  }
-};
+  return res.sendStatus(200);
+});
 
 module.exports = {
   loadGuides,
