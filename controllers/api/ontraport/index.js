@@ -38,7 +38,7 @@ const addInOntraport = async (req, res, next) => {
     const { body } = req;
 
     if (_.isUndefined(body)) {
-      res.sendStatus(404).send({ error: 'Something sent wrong!' });
+      res.status(404).send({ error: 'Something sent wrong!' });
       return;
     }
 
@@ -47,11 +47,12 @@ const addInOntraport = async (req, res, next) => {
 
       const isExistSubscription = response.data.data.length !== 0;
       if (isExistSubscription) {
-        res.sendStatus(400).send({ error: 'Subscription is exist...' });
+        //res.sendStatus(400).send({ error: 'Subscription is exist...' });
+        res.status(409).send({ error: 'You are already in the waiting list.' });
         return;
       }
     } catch (e) {
-      res.sendStatus(404).send({ error: 'Something sent wrong!' });
+      res.status(404).send({ error: 'Something sent wrong!' });
       return;
     }
 
@@ -59,8 +60,7 @@ const addInOntraport = async (req, res, next) => {
       await createOntraportSubscription(body);
       res.send({ message: 'You’re in! Check your inbox :)' });
     } catch (e) {
-      console.log(e);
-      res.sendStatus(404).send({ error: 'Something sent wrong!' });
+      res.status(404).send({ error: 'Something sent wrong!' });
     }
   } catch (e) {
     next(e);
