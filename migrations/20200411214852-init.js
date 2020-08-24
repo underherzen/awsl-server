@@ -12,11 +12,11 @@ const tableNames = [
   'ResetCurrentCourseToken',
   'Message',
   'ShortUrl',
-  'SubscriptionNotification'
-
+  'SubscriptionNotification',
+  'UserGuideList',
 ];
 module.exports = {
-  up: async function(queryInterface, Sequelize) {
+  up: async function (queryInterface, Sequelize) {
     const map = [];
 
     for (let el of tableNames) {
@@ -31,7 +31,7 @@ module.exports = {
 
     return map;
   },
-  down: async function(queryInterface, Sequelize) {
+  down: async function (queryInterface, Sequelize) {
     const map = [];
 
     for (let el of tableNames.reverse()) {
@@ -45,5 +45,5 @@ module.exports = {
     }
 
     return map;
-  }
+  },
 };

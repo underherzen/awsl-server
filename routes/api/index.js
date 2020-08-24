@@ -9,6 +9,7 @@ const designRoutes = require('./design');
 const ontraportRoutes = require('./ontraport');
 const adminRoutes = require('./admin');
 const testRoutes = require('./test');
+const onboardingRoutes = require('./onboarding');
 
 router.use('/guides', guideRoutes);
 
@@ -27,5 +28,7 @@ router.use('/ontraport', ontraportRoutes);
 router.use('/admin', adminRoutes);
 
 router.use('/test', testRoutes);
+
+router.use('/onboarding', onboardingRoutes);
 
 module.exports = router;

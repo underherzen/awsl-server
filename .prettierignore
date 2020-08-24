@@ -1,5 +1,4 @@
 bin
-migrations
 public
 dist
 node_modules

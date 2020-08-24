@@ -16,8 +16,6 @@ module.exports = (sequelize, DataTypes) => {
     {
       tableName: 'user_guides_lists',
       timestamps: true,
-      createdAt: 'created_at',
-      updatedAt: 'updated_at',
     }
   );
   UserGuideList.associate = function (models) {
