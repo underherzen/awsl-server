@@ -103,7 +103,7 @@ const REPLY_TEXTS = {
 2. Click Start Free Trial
 3. Set your start date to 4/9
 4. Choose the Belong: Find Your People Challenge
-Your journey to find your people starts Monday! And so does your 7 day FREE Trial :) I’ll see you then in our online community—can’t wait to connect. Let's GO!! https://goliveitup.com/?_from=radha&signup=true`,
+Your journey to find your people starts Monday! And so does your 7 day FREE Trial :) I’ll see you then in our online community—can’t wait to connect. Let's GO!! ${process.env.BASE_URL}/?_from=radha&signup=true`,
 };
 
 const REPLY_COMMANDS = {

@@ -22,9 +22,10 @@ class urlShortener {
   async createShort(full, userId) {
     let shortStr;
     shortStr = this.genRandomString(7);
-    const base = process.env.BASE_URL ? process.env.BASE_URL : 'goliveitup.com';
+    /*     const base = process.env.BASE_URL ? process.env.BASE_URL : 'goliveitup.com';
     const host =
-      base.indexOf('dev') > -1 ? 'dev.goliveitup.com' : base.indexOf('goliveitup') > -1 ? 'goliveitup.com' : base;
+      base.indexOf('dev') > -1 ? 'dev.goliveitup.com' : base.indexOf('goliveitup') > -1 ? 'goliveitup.com' : base; */
+    const host = new URL(process.env.BASE_URL).host;
     let doNext = true;
     while (doNext) {
       const existingShortUrl = await ShortUrl.findOne({

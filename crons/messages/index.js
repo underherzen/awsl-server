@@ -474,7 +474,7 @@ const sendAdditionalSms = async () => {
             return;
           }
           const firstName = user.first_name.trim();
-          const messageText = `Hi ${firstName}! Did you know that there’s a 95% chance you’ll complete this course if you have an Accountabilibuddy? So invite a friend, your team, your family to take this journey with you! Use this link to gift them 21 days free: http://goliveitup.com/?_from=buddy`;
+          const messageText = `Hi ${firstName}! Did you know that there’s a 95% chance you’ll complete this course if you have an Accountabilibuddy? So invite a friend, your team, your family to take this journey with you! Use this link to gift them 21 days free: ${process.env.BASE_URL}/?_from=buddy`;
 
           const messageObject = {
             from: await getTwilioNumber(client, user.phone),
