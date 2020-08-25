@@ -34,6 +34,23 @@ module.exports = (sequelize, DataTypes) => {
       day: {
         type: DataTypes.INTEGER,
       },
+      guides_list_id: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: 'user_guides_lists',
+          key: 'id',
+        },
+      },
+      position: {
+        type: DataTypes.INTEGER,
+        validate: {
+          isPositive(value) {
+            if (parseInt(value) > 0) {
+              throw new Error('Only positive values are allowed.');
+            }
+          },
+        },
+      },
       created_at: {
         allowNull: false,
         type: DataTypes.DATE,
